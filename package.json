@@ -1,12 +1,12 @@
 {
-    "name": "book-builder",
+    "name": "@twirl/book-builder",
     "version": "0.0.1",
     "description": "A lib to build HTML/PDF/FB2 e-book from Markdown source",
     "homepage": "https://github.com/twirl/The-Book-Builder",
     "license": "MIT",
     "author": "Sergey Konstantinov <twirl-team@yandex.ru>",
     "repository": "github.com:twirl/The-Book-Builder",
-    "devDependencies": {
+    "dependencies": {
         "css": "^3.0.0",
         "epub-gen": "^0.1.0",
         "image-data-uri": "^2.0.1",
