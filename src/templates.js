@@ -138,5 +138,116 @@ const templates = (module.exports = {
             ],
             position
         };
+    },
+
+    references: ({ references, position, l10n }) => {
+        return {
+            type: 'element',
+            tagName: 'div',
+            properties: {
+                className: ['references']
+            },
+            children: [
+                {
+                    type: 'element',
+                    tagName: 'h4',
+                    children: [
+                        {
+                            type: 'text',
+                            value: l10n.references
+                        }
+                    ],
+                    position
+                },
+                {
+                    type: 'element',
+                    tagName: 'ul',
+                    children: references.map((ref) =>
+                        templates.reference({ ...ref, l10n, position })
+                    )
+                }
+            ],
+            position
+        };
+    },
+
+    reference: ({
+        text,
+        href,
+        anchor,
+        backAnchor,
+        counter,
+        l10n,
+        position
+    }) => {
+        const isbn = href.slice(0, 5) == 'isbn:' ? href.slice(5) : null;
+        let refText;
+        if (isbn || !href) {
+            const match = text && text.match(/^(.+\S):(\d+)$/);
+            const book = (match && match[1]) || text;
+            const page = match && match[2];
+
+            refText = book;
+            if (isbn) {
+                refText += ` ISBN:${isbn}`;
+            }
+            if (page) {
+                refText += `, ${l10n.page} ${page}`;
+            }
+        } else {
+            refText = text || href;
+        }
+
+        const ref =
+            isbn || !href
+                ? {
+                      type: element,
+                      tagName: 'span',
+                      properties: {
+                          className: ['ref-book']
+                      },
+                      children: [{ type: 'text', value: refText }],
+                      position
+                  }
+                : {
+                      type: 'element',
+                      tagName: 'a',
+                      properties: {
+                          href: href,
+                          title: refText,
+                          className: ['ref-link']
+                      },
+                      children: [
+                          {
+                              type: 'text',
+                              value: refText
+                          }
+                      ],
+                      position
+                  };
+        return {
+            type: 'element',
+            tagName: 'li',
+            children: [
+                {
+                    type: 'element',
+                    tagName: 'a',
+                    properties: {
+                        name: anchor.replace(/^#/, ''),
+                        href: backAnchor,
+                        className: ['ref-counter']
+                    },
+                    children: [
+                        {
+                            type: 'text',
+                            value: `^${counter}.`
+                        }
+                    ],
+                    position
+                },
+                ref
+            ],
+            position
+        };
     }
 });

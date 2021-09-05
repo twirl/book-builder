@@ -15,8 +15,13 @@ const chapterProcessor = () => {
         const l10n = file.data.l10n;
         const templates = file.data.templates;
 
-        file.data.anchor = file.data.anchor = `chapter-${counter}`;
+        file.data.anchor = `chapter-${counter}`;
+
+        let h5counter = 0;
+        let refCounter = 0;
+
         const titles = [];
+        const references = [];
 
         const imageProcess = function (node, parent, index) {
             let processChildren = node.children && node.children.length;
@@ -53,12 +58,51 @@ const chapterProcessor = () => {
             }
         };
 
-        let h5counter = 0;
+        const refProcess = function (node, parent, index) {
+            let processChildren = node.children && node.children.length;
+            if (
+                node.tagName == 'a' &&
+                node.children &&
+                node.children.length == 1 &&
+                node.children[0].type == 'text'
+            ) {
+                const ref = (node.children[0].value || '').slice(0, 3);
+                const href = node.properties.href;
+
+                if (ref == 'ref') {
+                    refCounter++;
+                    const text = node.children[0].value.slice(4);
+                    const anchor = `#${file.data.anchor}-ref-${refCounter}`;
+                    const backAnchor = `${anchor}-back`;
+
+                    node.properties.href = anchor;
+                    node.properties.name = backAnchor.replace(/^#/, '');
+                    node.properties.className = ['ref'];
+
+                    node.children[0].value = `[${refCounter}]`;
+
+                    references.push({
+                        text,
+                        href,
+                        anchor,
+                        backAnchor,
+                        counter: refCounter
+                    });
+                }
+            }
+            if (processChildren) {
+                node.children.forEach((child, index) =>
+                    refProcess(child, node, index)
+                );
+            }
+        };
+
         tree.children.slice().forEach((node, index) => {
             switch (node.tagName) {
                 case 'h3':
                     titles.push(node.children[0].value);
-                    tree.children.splice(index, 1);
+                    tree.children[index] = 'deleted';
+                    node = null;
                     h5counter = 0;
                     break;
                 case 'h5':
@@ -94,9 +138,79 @@ const chapterProcessor = () => {
                     };
 
                     break;
+                case 'p':
+                    const incuts = {
+                        funFact: 'Fun Fact: ',
+                        beerMyth: 'Beer Myth: '
+                    };
+                    if (
+                        node.children &&
+                        node.children.length &&
+                        node.children[0].type == 'text'
+                    ) {
+                        const incut = Object.entries(incuts).reduce(
+                            (incut, [type, signature]) => {
+                                return (
+                                    incut ||
+                                    (node.children[0].value.indexOf(
+                                        signature
+                                    ) == 0
+                                        ? type
+                                        : false)
+                                );
+                            },
+                            false
+                        );
+                        if (incut) {
+                            node.children[0].value =
+                                node.children[0].value.slice(
+                                    incuts[incut].length
+                                );
+                            tree.children.splice(index, 1, {
+                                type: 'element',
+                                tagName: 'div',
+                                properties: {
+                                    className: [incut]
+                                },
+                                children: [
+                                    {
+                                        type: 'element',
+                                        tagName: 'h5',
+                                        children: [
+                                            {
+                                                type: 'text',
+                                                value: l10n[incut]
+                                            }
+                                        ],
+                                        position: node.position
+                                    },
+                                    node
+                                ],
+                                position: node.position
+                            });
+                            node = tree.children[index];
+                        }
+                    }
+                    break;
             }
-            imageProcess(node, tree, index);
+            if (node) {
+                imageProcess(node, tree, index);
+                refProcess(node, tree, index);
+            }
         });
+
+        tree.children = tree.children.filter((c) => c != 'deleted');
+
+        if (references.length) {
+            tree.children.push(
+                templates.references({
+                    references,
+                    position: tree.children[tree.children.length - 1].position,
+                    l10n
+                })
+            );
+        }
+
         file.data.title = templates.chapterTitleValue({
             titles,
             l10n,
