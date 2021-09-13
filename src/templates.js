@@ -1,4 +1,11 @@
-const templates = (module.exports = {
+import escapeHtml from 'escape-html';
+
+const templates = {
+    fonts: (fonts) =>
+        `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${fonts
+            .map((f) => `family=${encodeURIComponent(f)}`)
+            .join('&amp;')}"/>`,
+
     screenHtml: (html, css, l10n) => {
         return `<html><head>
             <meta charset="utf-8"/>
@@ -10,7 +17,7 @@ const templates = (module.exports = {
             <meta property="og:type" content="article"/>
             <meta property="og:description" content="${l10n.description}"/>
             <meta property="og:locale" content="${l10n.locale}"/>
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif&amp;family=PT+Sans&amp;family=Inconsolata"/>
+            ${templates.fonts(['PT Serif', 'PT Sans', 'Inconsolata'])}
             <style>${css}</style>
         </head><body>
             <article>
@@ -30,7 +37,7 @@ const templates = (module.exports = {
             <meta property="og:type" content="article"/>
             <meta property="og:description" content="${l10n.description}"/>
             <meta property="og:locale" content="${l10n.locale}"/>
-            <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Serif&amp;family=PT+Sans&amp;family=Inconsolata"/>
+            ${templates.fonts(['PT Serif', 'PT Sans', 'Inconsolata'])}
             <style>${css}</style>
         </head><body>
             <article>
@@ -38,6 +45,8 @@ const templates = (module.exports = {
             </article>
         </body></html>`;
     },
+
+    pageBreak: '<div style="page-break-after: always;"></div>',
 
     toc: (structure, l10n) => {
         return `<nav><h2 class="toc">${
@@ -55,199 +64,121 @@ const templates = (module.exports = {
             .join('')}</ul></nav>${templates.pageBreak}`;
     },
 
-    ref: (anchor, content) => {
-        return `<a href="#${anchor}" class="anchor" name="${anchor}">${content}</a>`;
+    link: (anchor, content, href, className = 'anchor') => {
+        return `<a href="${escapeHtml(
+            href || `#${anchor}`
+        )}" class="${className}" name="${escapeHtml(anchor)}">${content}</a>`;
     },
 
     sectionTitle: (section) => {
         return section.title
-            ? `<h2>${templates.ref(section.anchor, section.title)}</h2>`
+            ? `<h2>${templates.link(section.anchor, section.title)}</h2>`
             : '';
     },
 
     chapterTitle: (chapter) => {
-        return `<h3>${templates.ref(chapter.anchor, chapter.title)}</h3>`;
+        return `<h3>${templates.link(chapter.anchor, chapter.title)}</h3>`;
     },
 
-    chapterTitleValue: ({ titles, l10n, counter }) => {
-        return `${l10n.chapter} ${counter}. ${titles.join('. ')}`;
+    chapterTitleValue: ({ titleParts, l10n, counter }) => {
+        return `${l10n.chapter} ${counter}. ${titleParts.join('. ')}`;
     },
+
+    reference: ({ counter }) => {
+        return `<sup>${counter}</sup>`;
+    },
+
+    bibliography: (items, l10n) =>
+        `<ul class="bibliography">${items
+            .map((item) => templates.bibliographyItem(item, l10n))
+            .join('\n')}</ul>`,
+
+    bibliographyItem: (item, l10n) =>
+        `<li><p><a class="alias" name="${escapeHtml(
+            item.alias
+        )}">${templates.referenceTextAlias(
+            item,
+            l10n
+        )}</a> ${templates.referenceTextExcess(item, l10n)}${
+            item.href
+                ? `<br/><a target="_blank" class="external" href="${escapeHtml(
+                      item.href
+                  )}">${escapeHtml(item.href)}</a>`
+                : ''
+        }</p></li>`,
+
+    referenceList: (items, l10n) =>
+        `<ul class="references">${items
+            .map((i) => templates.referenceItem(i, l10n))
+            .join('\n')}</ul>`,
+
+    referenceItem: (
+        { counter, anchor, backAnchor, text, page, href, alias },
+        l10n
+    ) => {
+        return `<li><p>${templates.link(
+            anchor,
+            `<sup>${counter}</sup>`,
+            `#${backAnchor}`,
+            'back-anchor'
+        )}<span>${
+            alias
+                ? `<a href="#${alias}">${escapeHtml(text)}</a>`
+                : escapeHtml(text)
+        }${templates.referencePage(page, l10n)}${
+            !alias && href
+                ? `<br/><a target="_blank" class="external" href="${escapeHtml(
+                      href
+                  )}">${escapeHtml(href)}</a>`
+                : ''
+        }<span></p></li>`;
+    },
+
+    referenceTextIbid: (l10n) => l10n.ibid,
+
+    referenceTextAlias: ({ author, year }) =>
+        `${author}${year ? ` (${year})` : ''}`,
+
+    referenceTextExcess: ({ title, print, issue, isbn }, l10n) => {
+        let text = ` <em>${title}</em>`;
+        if (print) {
+            text += `. ${print}`;
+            if (issue) {
+                text += `, ${issue}`;
+            }
+        }
+        if (isbn) {
+            text += `. ${l10n.isbn}: ${isbn}`;
+        }
+        return text;
+    },
+
+    referencePage: (page, l10n) =>
+        page
+            ? page.match(/^\d+$/)
+                ? `, ${l10n.page} ${page}`
+                : `, ${l10n.pages} ${escapeHtml(page)}`
+            : '',
 
     h5Value: ({ value, number }) => {
         return typeof number == 'undefined' ? value : `${number}. ${value}`;
     },
 
-    pageBreak: '<div style="page-break-after: always;"></div>',
+    imageTitle: ({ title, l10n, alt }) =>
+        `${title}. ${l10n.imageCredit}: ${alt}`,
 
-    imgLinkTree: ({ src, href, title, alt, position }) => {
-        const fullTitle = `${title}. Image credit: ${alt}`;
-        return {
-            type: 'element',
-            tagName: 'div',
-            properties: {
-                style: 'page-break-inside: never'
-            },
-            children: [
-                {
-                    type: 'element',
-                    tagName: 'img',
-                    properties: {
-                        src,
-                        alt: fullTitle,
-                        title: fullTitle
-                    },
-                    position
-                },
-                {
-                    type: 'element',
-                    tagName: 'h6',
-                    children: [
-                        {
-                            type: 'text',
-                            value: title
-                        }
-                    ],
-                    position
-                },
-                {
-                    type: 'element',
-                    tagName: 'h6',
-                    children: [
-                        {
-                            type: 'text',
-                            value: 'Image credit: '
-                        },
-                        {
-                            type: 'element',
-                            tagName: 'a',
-                            properties: {
-                                href: href,
-                                title: fullTitle
-                            },
-                            children: [
-                                {
-                                    type: 'text',
-                                    value: alt
-                                }
-                            ],
-                            position
-                        }
-                    ],
-                    position
-                }
-            ],
-            position
-        };
-    },
-
-    references: ({ references, position, l10n }) => {
-        return {
-            type: 'element',
-            tagName: 'div',
-            properties: {
-                className: ['references']
-            },
-            children: [
-                {
-                    type: 'element',
-                    tagName: 'h4',
-                    children: [
-                        {
-                            type: 'text',
-                            value: l10n.references
-                        }
-                    ],
-                    position
-                },
-                {
-                    type: 'element',
-                    tagName: 'ul',
-                    children: references.map((ref) =>
-                        templates.reference({ ...ref, l10n, position })
-                    )
-                }
-            ],
-            position
-        };
-    },
-
-    reference: ({
-        text,
-        href,
-        anchor,
-        backAnchor,
-        counter,
-        l10n,
-        position
-    }) => {
-        const isbn = href.slice(0, 5) == 'isbn:' ? href.slice(5) : null;
-        let refText;
-        if (isbn || !href) {
-            const match = text && text.match(/^(.+\S):(\d+)$/);
-            const book = (match && match[1]) || text;
-            const page = match && match[2];
-
-            refText = book;
-            if (isbn) {
-                refText += ` ISBN:${isbn}`;
-            }
-            if (page) {
-                refText += `, ${l10n.page} ${page}`;
-            }
-        } else {
-            refText = text || href;
-        }
-
-        const ref =
-            isbn || !href
-                ? {
-                      type: element,
-                      tagName: 'span',
-                      properties: {
-                          className: ['ref-book']
-                      },
-                      children: [{ type: 'text', value: refText }],
-                      position
-                  }
-                : {
-                      type: 'element',
-                      tagName: 'a',
-                      properties: {
-                          href: href,
-                          title: refText,
-                          className: ['ref-link']
-                      },
-                      children: [
-                          {
-                              type: 'text',
-                              value: refText
-                          }
-                      ],
-                      position
-                  };
-        return {
-            type: 'element',
-            tagName: 'li',
-            children: [
-                {
-                    type: 'element',
-                    tagName: 'a',
-                    properties: {
-                        name: anchor.replace(/^#/, ''),
-                        href: backAnchor,
-                        className: ['ref-counter']
-                    },
-                    children: [
-                        {
-                            type: 'text',
-                            value: `^${counter}.`
-                        }
-                    ],
-                    position
-                },
-                ref
-            ],
-            position
-        };
+    aImg: ({ src, href, title, alt, l10n, className = 'img-wrapper' }) => {
+        const fullTitle = escapeHtml(
+            templates.imageTitle({ title, l10n, alt })
+        );
+        return `<div className="${className}"><img src="${escapeHtml(
+            src
+        )}" alt="${fullTitle}" title="${fullTitle}"/><h6>${escapeHtml(
+            title
+        )}</h6><h6><a href="${escapeHtml(
+            href
+        )}" title="${fullTitle}"/>${escapeHtml(alt)}</a></h6>`;
     }
-});
+};
+
+export default templates;
