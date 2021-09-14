@@ -5,37 +5,40 @@ export const references = ({ references }, { l10n, templates }) => {
 
     const { sources, preparedRefs } = references.reduce(
         ({ sources, preparedRefs }, ref) => {
-            const { text, href, backAnchor } = ref;
-            if (!text && href) {
-                preparedRefs.push(ref);
-            } else if (text) {
-                const match = text.match(/^([a-z\d-]+)(:{.+})?(:[\d,-\s]+)?$/);
-                if (!match) {
-                    preparedRefs.push(ref);
-                    return { sources, preparedRefs };
-                }
-                const [alias, json, page] = match.slice(1);
-                if (json) {
+            let alias = ref.alias;
+
+            if (alias) {
+                if (alias.at(0) == '{' && alias.at(-1) == '}') {
                     try {
-                        const res = JSON.parse(json.slice(1));
-                        sources[alias] = {
-                            author: '',
-                            year: '',
-                            ...res,
-                            href,
-                            alias
-                        };
+                        const extra = JSON.parse(alias);
+                        alias = extra.source && extra.source.alias;
+                        if (alias) {
+                            sources[alias] = extra.source;
+                            preparedRefs.push({
+                                ...ref,
+                                ...extra,
+                                source: null,
+                                alias
+                            });
+                        } else {
+                            preparedRefs.push({
+                                ...ref,
+                                ...extra,
+                                source: null,
+                                alias: null
+                            });
+                        }
                     } catch (e) {
-                        throw new Error(`Cannot parse JSON ${json}`);
+                        throw new Error(`Cannot parse JSON ${alias}, ${e}`);
                     }
+                } else {
+                    preparedRefs.push({
+                        ...ref,
+                        alias
+                    });
                 }
-                preparedRefs.push({
-                    ...ref,
-                    alias,
-                    page: page && page.slice(1)
-                });
             } else {
-                throw new Error(`Cannot parse reference #${backAnchor}`);
+                preparedRefs.push(ref);
             }
             return { sources, preparedRefs };
         },
@@ -43,23 +46,21 @@ export const references = ({ references }, { l10n, templates }) => {
     );
 
     let previousSource;
+    preparedRefs.forEach(({ alias, counter, backAnchor }) => {
+        if (alias && sources[alias]) {
+            if (!sources[alias].refs) {
+                sources[alias].refs = [];
+            }
+            sources[alias].refs.push({ counter, backAnchor });
+        }
+    });
     return [
         {
             anchor: 'bibliography',
             title: l10n.bibliography,
             content: templates.bibliography(
                 Object.values(sources).sort((a, b) => {
-                    return a.author == b.author
-                        ? a.year == b.year
-                            ? a.title < b.title
-                                ? -1
-                                : 1
-                            : a.year < b.year
-                            ? -1
-                            : 1
-                        : a.author < b.author
-                        ? -1
-                        : 1;
+                    return a.short < b.short ? -1 : 1;
                 }),
                 l10n
             )
@@ -69,34 +70,31 @@ export const references = ({ references }, { l10n, templates }) => {
             title: l10n.references,
             content: templates.referenceList(
                 preparedRefs.map((ref) => {
-                    const { alias } = ref;
+                    const alias = ref.alias;
                     if (!alias) {
                         previousSource = null;
-                        return {
-                            text: ref.text || href,
-                            ...ref
-                        };
+                        return templates.referenceText(ref, l10n);
                     } else {
-                        let source = sources[alias];
+                        let text;
+                        const source = sources[alias];
                         if (!source) {
                             //throw new Error(`Unknown source ${alias}`);
-                            source = {
-                                author: 'unknown',
-                                title: 'unknown',
-                                alias: 'unknown'
-                            };
-                        }
-                        let text;
-                        if (previousSource == alias) {
-                            text = templates.referenceTextIbid(l10n);
+                            text = 'Unknown source';
+                        } else if (previousSource == alias) {
+                            text = templates.referenceSourceIbid(
+                                ref,
+                                source,
+                                l10n
+                            );
                         } else {
-                            text = templates.referenceTextAlias(source, l10n);
+                            text = templates.referenceSourceFull(
+                                ref,
+                                source,
+                                l10n
+                            );
                         }
                         previousSource = alias;
-                        return {
-                            ...ref,
-                            text
-                        };
+                        return text;
                     }
                 }),
                 l10n

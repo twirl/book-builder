@@ -9,7 +9,6 @@ export default () =>
             node.children[0].tagName == 'img'
         ) {
             const img = node.children[0];
-            debugger;
             return htmlAst(
                 templates.aImg({
                     href: node.properties.href,

@@ -6,7 +6,7 @@ const templates = {
             .map((f) => `family=${encodeURIComponent(f)}`)
             .join('&amp;')}"/>`,
 
-    screenHtml: (html, css, l10n) => {
+    screenHtml: (content, css, { l10n, fonts = [] }) => {
         return `<html><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
@@ -17,16 +17,16 @@ const templates = {
             <meta property="og:type" content="article"/>
             <meta property="og:description" content="${l10n.description}"/>
             <meta property="og:locale" content="${l10n.locale}"/>
-            ${templates.fonts(['PT Serif', 'PT Sans', 'Inconsolata'])}
+            ${templates.fonts(fonts)}
             <style>${css}</style>
         </head><body>
             <article>
-                ${html}
+                ${content}
             </article>
         </body></html>`;
     },
 
-    printHtml: (html, css, l10n) => {
+    printHtml: (content, css, { l10n, fonts = [] }) => {
         return `<html><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
@@ -37,11 +37,11 @@ const templates = {
             <meta property="og:type" content="article"/>
             <meta property="og:description" content="${l10n.description}"/>
             <meta property="og:locale" content="${l10n.locale}"/>
-            ${templates.fonts(['PT Serif', 'PT Sans', 'Inconsolata'])}
+            ${templates.fonts(fonts)}
             <style>${css}</style>
         </head><body>
             <article>
-                ${html}
+                ${content}
             </article>
         </body></html>`;
     },
@@ -94,12 +94,11 @@ const templates = {
             .join('\n')}</ul>`,
 
     bibliographyItem: (item, l10n) =>
-        `<li><p><a class="alias" name="${escapeHtml(
+        `<li><p><a class="alias" name="bibliography-${escapeHtml(
             item.alias
-        )}">${templates.referenceTextAlias(
-            item,
-            l10n
-        )}</a> ${templates.referenceTextExcess(item, l10n)}${
+        )}">${templates
+            .joinReferenceParts(item.short, item.extra || [])
+            .trim()}${
             item.href
                 ? `<br/><a target="_blank" class="external" href="${escapeHtml(
                       item.href
@@ -107,58 +106,92 @@ const templates = {
                 : ''
         }</p></li>`,
 
-    referenceList: (items, l10n) =>
-        `<ul class="references">${items
-            .map((i) => templates.referenceItem(i, l10n))
-            .join('\n')}</ul>`,
+    joinReferenceParts: (...args) => {
+        const text = []
+            .concat(...args)
+            .filter((s) => Boolean(s))
+            .reduce((s, t, i) => {
+                const delimiter =
+                    i > 0
+                        ? s.at(-1) == '.' || s.at(-1) == ')'
+                            ? ' '
+                            : '. '
+                        : '';
+                return (
+                    s +
+                    delimiter +
+                    (i % 2 == 1 ? `<em>${escapeHtml(t)}</em>` : escapeHtml(t))
+                );
+            }, '');
+        return text ? ' ' + text : '';
+    },
 
-    referenceItem: (
-        { counter, anchor, backAnchor, text, page, href, alias },
-        l10n
-    ) => {
-        return `<li><p>${templates.link(
+    referenceList: (items) => {
+        return `<ul class="references">${items
+            .map((text) => `<li><p>${text}</p></li>`)
+            .join('\n')}</ul>`;
+    },
+
+    referenceText: (ref, l10n) => {
+        const text =
+            ref.text ||
+            `${templates.joinReferenceParts(
+                ref.short,
+                ref.extra || []
+            )}${templates.referencePage(ref, l10n)}`;
+        const href = ref.href
+            ? `<a target="_blank" class="external${
+                  text ? '' : ' text'
+              }" href="${escapeHtml(ref.href)}">${escapeHtml(ref.href)}</a>`
+            : '';
+        return `${templates.referenceBackLink(ref, l10n)}<span>${text.trim()}${
+            href && text ? '<br/>' : ''
+        }${href}</span>`;
+    },
+
+    referenceSourceIbid: (ref, source, l10n) =>
+        `${templates.referenceBackLink(ref, l10n)}<span>${
+            l10n.ibid
+        }${templates.referencePage(ref, l10n)}</span>`,
+
+    referenceSourceFull: (ref, source, l10n) =>
+        `${templates.referenceBackLink(
+            ref,
+            l10n
+        )}<span><a href="#bibliography-${source.alias}">${escapeHtml(
+            source.short
+        )}${
+            source.short.at(-1) == '.' || source.short.at(-1) == ')' ? '' : '.'
+        }${templates.joinReferenceParts(
+            ref.short,
+            ref.extra || []
+        )}</a>${templates.referencePage(ref, l10n)}${
+            ref.href
+                ? `<br/><a target="_blank" class="external" href="${escapeHtml(
+                      ref.href
+                  )}">${escapeHtml(ref.href)}</a>`
+                : ''
+        }</span>`,
+
+    referenceBackLink: ({ anchor, counter, backAnchor }) =>
+        templates.link(
             anchor,
             `<sup>${counter}</sup>`,
             `#${backAnchor}`,
             'back-anchor'
-        )}<span>${
-            alias
-                ? `<a href="#${alias}">${escapeHtml(text)}</a>`
-                : escapeHtml(text)
-        }${templates.referencePage(page, l10n)}${
-            !alias && href
-                ? `<br/><a target="_blank" class="external" href="${escapeHtml(
-                      href
-                  )}">${escapeHtml(href)}</a>`
-                : ''
-        }<span></p></li>`;
-    },
+        ),
 
-    referenceTextIbid: (l10n) => l10n.ibid,
-
-    referenceTextAlias: ({ author, year }) =>
-        `${author}${year ? ` (${year})` : ''}`,
-
-    referenceTextExcess: ({ title, print, issue, isbn }, l10n) => {
-        let text = ` <em>${title}</em>`;
-        if (print) {
-            text += `. ${print}`;
-            if (issue) {
-                text += `, ${issue}`;
-            }
+    referencePage: ({ page }, l10n) => {
+        if (!page) {
+            return '';
+        } else if (page.match(/^\d+$/)) {
+            return `, ${l10n.page} ${page}`;
+        } else if (page.match(/^[\d,-\s]+$/)) {
+            return `, ${l10n.pages} ${escapeHtml(page)}`;
+        } else {
+            return ` <em>${escapeHtml(page.replace(/^"|"$/g, ''))}</em>`;
         }
-        if (isbn) {
-            text += `. ${l10n.isbn}: ${isbn}`;
-        }
-        return text;
     },
-
-    referencePage: (page, l10n) =>
-        page
-            ? page.match(/^\d+$/)
-                ? `, ${l10n.page} ${page}`
-                : `, ${l10n.pages} ${escapeHtml(page)}`
-            : '',
 
     h5Value: ({ value, number }) => {
         return typeof number == 'undefined' ? value : `${number}. ${value}`;

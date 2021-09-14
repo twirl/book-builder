@@ -10,23 +10,27 @@ export default () =>
         ) {
             const ref = (node.children[0].value || '').slice(0, 4);
             const href = node.properties.href;
+
             if (!data.refCounter) {
                 data.refCounter = 0;
             }
             if (!data.references) {
                 data.references = [];
             }
-
-            if (ref == 'ref:') {
+            if (ref == 'ref' || ref == 'ref:') {
                 data.refCounter++;
-                const text = node.children[0].value.slice(4).trim();
+                const value = node.children[0].value.slice(4).trim();
+                const match = value.match(/^(.+):([\d,-\s]+|".+")$/);
+                const page = match && match[2];
+                const text = ref == 'ref' ? (match && match[1]) || value : null;
+                const alias =
+                    ref == 'ref:' ? (match && match[1]) || value : null;
                 const anchor = `${data.anchor}-ref-${data.refCounter}`;
                 const backAnchor = `${anchor}-back`;
 
                 node.properties.href = '#' + anchor;
                 node.properties.name = backAnchor;
                 node.properties.className = ['ref'];
-
                 node.children = (
                     await htmlAst(
                         data.templates.reference({
@@ -38,8 +42,10 @@ export default () =>
                 data.references.push({
                     counter: data.refCounter,
                     text,
+                    alias,
                     href,
                     anchor,
+                    page,
                     backAnchor
                 });
             }
