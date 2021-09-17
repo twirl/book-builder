@@ -11,6 +11,7 @@ export default async ({ lang, l10n, structure, basePath, out }) => {
         appendChapterTitles: false,
         content: structure.sections.reduce(
             (content, section) => {
+                if (!section.title) debugger;
                 content.push({
                     title: section.title.toUpperCase(),
                     data: `<h2>${section.title}</h2>`

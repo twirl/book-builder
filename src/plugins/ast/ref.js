@@ -8,17 +8,22 @@ export default () =>
             node.children.length == 1 &&
             node.children[0].type == 'text'
         ) {
-            const ref = (node.children[0].value || '').slice(0, 4);
+            const ref = (node.children[0].value || '').slice(0, 4).trim();
             const href = node.properties.href;
 
             if (!data.refCounter) {
                 data.refCounter = 0;
             }
+            if (!data.localContext.refCounter) {
+                data.localContext.refCounter = 0;
+            }
             if (!data.references) {
                 data.references = [];
             }
+
             if (ref == 'ref' || ref == 'ref:') {
                 data.refCounter++;
+                data.localContext.refCounter++;
                 const value = node.children[0].value.slice(4).trim();
                 const match = value.match(/^(.+):([\d,-\s]+|".+")$/);
                 const page = match && match[2];
@@ -34,13 +39,15 @@ export default () =>
                 node.children = (
                     await htmlAst(
                         data.templates.reference({
-                            counter: data.refCounter
+                            counter: data.refCounter,
+                            localCounter: data.localContext.refCounter
                         })
                     )
                 ).children;
 
                 data.references.push({
                     counter: data.refCounter,
+                    localCounter: data.localContext.refCounter,
                     text,
                     alias,
                     href,

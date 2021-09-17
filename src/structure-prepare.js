@@ -30,14 +30,16 @@ export const structurePrepare = async ({
 
     const referencesChapters = references(structure, { l10n, templates });
     if (referencesChapters) {
-        structure.sections.at(-1).chapters.push(...referencesChapters);
+        structure.sections
+            .at(-1)
+            .chapters.push(referencesChapters.bibliography);
     }
 
     const tocHtml = toc(structure, { templates, l10n });
     const htmlContent = [
         structure.frontPage,
         tocHtml,
-        ...structure.sections.map((section, index) =>
+        ...structure.sections.map((section, sectionIndex) =>
             section.chapters
                 .reduce(
                     (content, chapter, index) => {
@@ -49,11 +51,25 @@ export const structurePrepare = async ({
                             );
                         }
                         content.push(chapter.content);
+                        if (
+                            referencesChapters &&
+                            referencesChapters.sections[sectionIndex] &&
+                            referencesChapters.sections[sectionIndex]
+                                .chapters &&
+                            referencesChapters.sections[sectionIndex].chapters[
+                                index
+                            ]
+                        ) {
+                            content.push(
+                                referencesChapters.sections[sectionIndex]
+                                    .chapters[index]
+                            );
+                        }
                         return content;
                     },
                     [
                         templates.sectionTitle(section, {
-                            number: index + 1
+                            number: sectionIndex + 1
                         }),
                         section.content || ''
                     ]
@@ -123,12 +139,10 @@ const getStructure = async ({
                     section.chapters.push({
                         anchor: content.data.anchor,
                         title: content.data.title,
-                        content: content.value + pageBreak
+                        content: content.value + pageBreak,
+                        references: content.data.references || null
                     });
                     refCounter = content.data.refCounter;
-                    if (content.data.references) {
-                        structure.references.push(...content.data.references);
-                    }
                     counter++;
                     return section;
                 }, Promise.resolve(section));

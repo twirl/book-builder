@@ -84,8 +84,8 @@ const templates = {
         return `${l10n.chapter} ${counter}. ${titleParts.join('. ')}`;
     },
 
-    reference: ({ counter }) => {
-        return `<sup>${counter}</sup>`;
+    reference: ({ localCounter }) => {
+        return `<sup>${localCounter}</sup>`;
     },
 
     bibliography: (items, l10n) =>
@@ -126,8 +126,8 @@ const templates = {
         return text ? ' ' + text : '';
     },
 
-    referenceList: (items) => {
-        return `<ul class="references">${items
+    referenceList: (items, l10n) => {
+        return `<h4>${l10n.references}</h4><ul class="references">${items
             .map((text) => `<li><p>${text}</p></li>`)
             .join('\n')}</ul>`;
     },
@@ -158,9 +158,9 @@ const templates = {
         `${templates.referenceBackLink(
             ref,
             l10n
-        )}<span><a href="#bibliography-${source.alias}">${escapeHtml(
-            source.short
-        )}${
+        )}<span><a class="ref-to-bibliography" href="#bibliography-${
+            source.alias
+        }">${escapeHtml(source.short)}${
             source.short.at(-1) == '.' || source.short.at(-1) == ')' ? '' : '.'
         }${templates.joinReferenceParts(
             ref.short,
@@ -173,10 +173,10 @@ const templates = {
                 : ''
         }</span>`,
 
-    referenceBackLink: ({ anchor, counter, backAnchor }) =>
+    referenceBackLink: ({ anchor, localCounter, backAnchor }) =>
         templates.link(
             anchor,
-            `<sup>${counter}</sup>`,
+            `<sup>${localCounter}</sup>`,
             `#${backAnchor}`,
             'back-anchor'
         ),
@@ -197,20 +197,23 @@ const templates = {
         return typeof number == 'undefined' ? value : `${number}. ${value}`;
     },
 
-    imageTitle: ({ title, l10n, alt }) =>
-        `${title}. ${l10n.imageCredit}: ${alt}`,
-
     aImg: ({ src, href, title, alt, l10n, className = 'img-wrapper' }) => {
         const fullTitle = escapeHtml(
-            templates.imageTitle({ title, l10n, alt })
+            `${title}. ${
+                alt == 'PD' ? l10n.publicDomain : `${l10n.imageCredit}: ${alt}`
+            }`
         );
         return `<div className="${className}"><img src="${escapeHtml(
             src
         )}" alt="${fullTitle}" title="${fullTitle}"/><h6>${escapeHtml(
             title
-        )}</h6><h6><a href="${escapeHtml(
-            href
-        )}" title="${fullTitle}"/>${escapeHtml(alt)}</a></h6>`;
+        )}</h6><h6>${
+            alt == 'PD'
+                ? l10n.publicDomain
+                : `${l10n.imageCredit}: <a href="${escapeHtml(
+                      href
+                  )}" title="${fullTitle}"/>${escapeHtml(alt)}</a></h6>`
+        }`;
     }
 };
 

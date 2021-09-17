@@ -23,6 +23,7 @@ const createChapterProcessor = (plugins = []) => {
 
         file.data.anchor = `chapter-${counter}`;
         file.data.titleParts = [];
+        file.data.localContext = {};
 
         tree = await processNode(
             tree,
@@ -41,6 +42,7 @@ const createChapterProcessor = (plugins = []) => {
         });
 
         file.data.counter++;
+        file.data.localContext = null;
 
         next(null, tree);
     };

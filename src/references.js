@@ -1,10 +1,7 @@
-export const references = ({ references }, { l10n, templates }) => {
-    if (!references.length) {
-        return null;
-    }
-
-    const { sources, preparedRefs } = references.reduce(
-        ({ sources, preparedRefs }, ref) => {
+export const references = ({ sections }, { l10n, templates }) => {
+    const sources = {};
+    const preparedRefs = chaptersMap(sections, (chapter) => {
+        return (chapter.references || []).reduce((refs, ref, index) => {
             let alias = ref.alias;
 
             if (alias) {
@@ -14,14 +11,14 @@ export const references = ({ references }, { l10n, templates }) => {
                         alias = extra.source && extra.source.alias;
                         if (alias) {
                             sources[alias] = extra.source;
-                            preparedRefs.push({
+                            refs.push({
                                 ...ref,
                                 ...extra,
                                 source: null,
                                 alias
                             });
                         } else {
-                            preparedRefs.push({
+                            refs.push({
                                 ...ref,
                                 ...extra,
                                 source: null,
@@ -32,30 +29,20 @@ export const references = ({ references }, { l10n, templates }) => {
                         throw new Error(`Cannot parse JSON ${alias}, ${e}`);
                     }
                 } else {
-                    preparedRefs.push({
+                    refs.push({
                         ...ref,
                         alias
                     });
                 }
             } else {
-                preparedRefs.push(ref);
+                refs.push(ref);
             }
-            return { sources, preparedRefs };
-        },
-        { sources: {}, preparedRefs: [] }
-    );
 
-    let previousSource;
-    preparedRefs.forEach(({ alias, counter, backAnchor }) => {
-        if (alias && sources[alias]) {
-            if (!sources[alias].refs) {
-                sources[alias].refs = [];
-            }
-            sources[alias].refs.push({ counter, backAnchor });
-        }
+            return refs;
+        }, []);
     });
-    return [
-        {
+    return {
+        bibliography: {
             anchor: 'bibliography',
             title: l10n.bibliography,
             content: templates.bibliography(
@@ -65,40 +52,45 @@ export const references = ({ references }, { l10n, templates }) => {
                 l10n
             )
         },
-        {
-            anchor: 'references',
-            title: l10n.references,
-            content: templates.referenceList(
-                preparedRefs.map((ref) => {
-                    const alias = ref.alias;
-                    if (!alias) {
-                        previousSource = null;
-                        return templates.referenceText(ref, l10n);
+        sections: chaptersMap(preparedRefs, (refs) => {
+            let previousSource;
+            const items = [];
+            refs.forEach((ref) => {
+                const alias = ref.alias;
+                if (!alias) {
+                    previousSource = null;
+                    items.push(templates.referenceText(ref, l10n));
+                } else {
+                    let text;
+                    const source = sources[alias];
+                    if (!source) {
+                        //throw new Error(`Unknown source ${alias}`);
+                        text = 'Unknown source';
+                    } else if (previousSource == alias) {
+                        text = templates.referenceSourceIbid(ref, source, l10n);
                     } else {
-                        let text;
-                        const source = sources[alias];
-                        if (!source) {
-                            //throw new Error(`Unknown source ${alias}`);
-                            text = 'Unknown source';
-                        } else if (previousSource == alias) {
-                            text = templates.referenceSourceIbid(
-                                ref,
-                                source,
-                                l10n
-                            );
-                        } else {
-                            text = templates.referenceSourceFull(
-                                ref,
-                                source,
-                                l10n
-                            );
-                        }
-                        previousSource = alias;
-                        return text;
+                        text = templates.referenceSourceFull(ref, source, l10n);
                     }
-                }),
-                l10n
-            )
-        }
-    ];
+                    previousSource = alias;
+                    items.push(text);
+                }
+            });
+            return items.length ? templates.referenceList(items, l10n) : null;
+        })
+    };
 };
+
+function chaptersMap(sections, callback) {
+    const result = [];
+    sections.forEach((section, sectionIndex) => {
+        result[sectionIndex] = { chapters: [] };
+        section.chapters.forEach((chapter, chapterIndex) => {
+            result[sectionIndex].chapters[chapterIndex] = callback(
+                chapter,
+                sectionIndex,
+                chapterIndex
+            );
+        });
+    });
+    return result;
+}
