@@ -1,7 +1,7 @@
 import datauri from 'datauri';
 
 export default () => {
-    return (tree, file, next) => {
+    return async (tree, file, next) => {
         const images = [];
         const imageSearch = (node) => {
             if (node.tagName == 'img') {
@@ -14,15 +14,11 @@ export default () => {
 
         imageSearch(tree);
 
-        Promise.all(
-            images.map((imageNode) => {
-                const src = imageNode.properties.src;
-                return datauri(src).then((src) => {
-                    imageNode.properties.src = src;
-                });
-            })
-        ).then(() => {
-            next();
-        });
+        for (const imageNode of images) {
+            const dataUri = await datauri(imageNode.properties.src);
+            imageNode.properties.src = dataUri;
+        }
+
+        next();
     };
 };

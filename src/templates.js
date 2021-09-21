@@ -149,10 +149,15 @@ const templates = {
         }${href}</span>`;
     },
 
-    referenceSourceIbid: (ref, source, l10n) =>
-        `${templates.referenceBackLink(ref, l10n)}<span>${
-            l10n.ibid
-        }${templates.referencePage(ref, l10n)}</span>`,
+    referenceSourceIbid: (ref, source, l10n, samePage = false) =>
+        `${templates.referenceBackLink(ref, l10n)}<span>${l10n.ibid}${
+            samePage ? templates.referencePage(ref, l10n) : ''
+        }</span>`,
+
+    referenceIbid: (ref, l10n, samePage = false) =>
+        `${templates.referenceBackLink(ref, l10n)}<span>${l10n.ibid}${
+            samePage ? templates.referencePage(ref, l10n) : ''
+        }</span>`,
 
     referenceSourceFull: (ref, source, l10n) =>
         `${templates.referenceBackLink(
@@ -188,6 +193,10 @@ const templates = {
             return `, ${l10n.page} ${page}`;
         } else if (page.match(/^[\d,-\s]+$/)) {
             return `, ${l10n.pages} ${escapeHtml(page)}`;
+        } else if (page.at(-1) == ':') {
+            return `, ${l10n.refChapter} ${escapeHtml(
+                page.replace(/^"|":$/g, '')
+            )}`;
         } else {
             return ` <em>${escapeHtml(page.replace(/^"|"$/g, ''))}</em>`;
         }

@@ -53,27 +53,39 @@ export const references = ({ sections }, { l10n, templates }) => {
             )
         },
         sections: chaptersMap(preparedRefs, (refs) => {
-            let previousSource;
+            let previousRef = null;
             const items = [];
             refs.forEach((ref) => {
                 const alias = ref.alias;
                 if (!alias) {
-                    previousSource = null;
-                    items.push(templates.referenceText(ref, l10n));
+                    items.push(
+                        previousRef && ref.href == previousRef.href
+                            ? templates.referenceIbid(ref, l10n)
+                            : templates.referenceText(ref, l10n)
+                    );
                 } else {
                     let text;
                     const source = sources[alias];
                     if (!source) {
                         //throw new Error(`Unknown source ${alias}`);
                         text = 'Unknown source';
-                    } else if (previousSource == alias) {
-                        text = templates.referenceSourceIbid(ref, source, l10n);
+                    } else if (
+                        previousRef &&
+                        previousRef.alias == alias &&
+                        previousRef.href == ref.href
+                    ) {
+                        text = templates.referenceSourceIbid(
+                            ref,
+                            source,
+                            l10n,
+                            previousRef.page != ref.page
+                        );
                     } else {
                         text = templates.referenceSourceFull(ref, source, l10n);
                     }
-                    previousSource = alias;
                     items.push(text);
                 }
+                previousRef = ref;
             });
             return items.length ? templates.referenceList(items, l10n) : null;
         })

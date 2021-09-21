@@ -25,7 +25,7 @@ export default () =>
                 data.refCounter++;
                 data.localContext.refCounter++;
                 const value = node.children[0].value.slice(4).trim();
-                const match = value.match(/^(.+):([\d,-\s]+|".+")$/);
+                const match = value.match(/^(.+):([\d,-\s]+|".+":?)$/);
                 const page = match && match[2];
                 const text = ref == 'ref' ? (match && match[1]) || value : null;
                 const alias =
