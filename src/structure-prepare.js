@@ -28,11 +28,9 @@ export const structurePrepare = async ({
         pipeline
     });
 
-    const referencesChapters = references(structure, { l10n, templates });
-    if (referencesChapters) {
-        structure.sections
-            .at(-1)
-            .chapters.push(referencesChapters.bibliography);
+    const reference = references(structure, { l10n, templates });
+    if (reference) {
+        structure.sections.push(reference.bibliography);
     }
 
     const tocHtml = toc(structure, { templates, l10n });
@@ -40,7 +38,7 @@ export const structurePrepare = async ({
         structure.frontPage,
         tocHtml,
         ...structure.sections.map((section, sectionIndex) =>
-            section.chapters
+            (section.chapters || [])
                 .reduce(
                     (content, chapter, index) => {
                         if (chapter.title) {
@@ -52,17 +50,13 @@ export const structurePrepare = async ({
                         }
                         content.push(chapter.content);
                         if (
-                            referencesChapters &&
-                            referencesChapters.sections[sectionIndex] &&
-                            referencesChapters.sections[sectionIndex]
-                                .chapters &&
-                            referencesChapters.sections[sectionIndex].chapters[
-                                index
-                            ]
+                            reference &&
+                            reference.sections[sectionIndex] &&
+                            reference.sections[sectionIndex].chapters &&
+                            reference.sections[sectionIndex].chapters[index]
                         ) {
                             content.push(
-                                referencesChapters.sections[sectionIndex]
-                                    .chapters[index]
+                                reference.sections[sectionIndex].chapters[index]
                             );
                         }
                         return content;

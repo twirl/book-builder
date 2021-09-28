@@ -53,13 +53,15 @@ const templates = {
             l10n.toc
         }</h2><ul class="table-of-contents">${structure.sections
             .map((section) => {
-                return `<li><a href="#${section.anchor}">${
-                    section.title
-                }</a><ul>${section.chapters
-                    .map((chapter) => {
-                        return `<li><a href="#${chapter.anchor}">${chapter.title}</a></li>`;
-                    })
-                    .join('')}</ul></li>`;
+                return `<li><a href="#${section.anchor}">${section.title}</a>${
+                    section.chapters
+                        ? `<ul>${section.chapters
+                              .map((chapter) => {
+                                  return `<li><a href="#${chapter.anchor}">${chapter.title}</a></li>`;
+                              })
+                              .join('')}</ul>`
+                        : ''
+                }</li>`;
             })
             .join('')}</ul></nav>${templates.pageBreak}`;
     },
@@ -107,22 +109,20 @@ const templates = {
         }</p></li>`,
 
     joinReferenceParts: (...args) => {
-        const text = []
-            .concat(...args)
-            .filter((s) => Boolean(s))
-            .reduce((s, t, i) => {
-                const delimiter =
-                    i > 0
-                        ? s.at(-1) == '.' || s.at(-1) == ')'
-                            ? ' '
-                            : '. '
-                        : '';
-                return (
-                    s +
-                    delimiter +
-                    (i % 2 == 1 ? `<em>${escapeHtml(t)}</em>` : escapeHtml(t))
-                );
-            }, '');
+        const parts = [].concat(...args).filter((s) => Boolean(s));
+        const text = parts.reduce((s, t, i) => {
+            const delimiter =
+                i > 0
+                    ? parts[i - 1].at(-1).match(/[\.\?\!\)]/)
+                        ? ' '
+                        : '. '
+                    : '';
+            return (
+                s +
+                delimiter +
+                (i % 2 == 1 ? `<em>${escapeHtml(t)}</em>` : escapeHtml(t))
+            );
+        }, '');
         return text ? ' ' + text : '';
     },
 
@@ -166,7 +166,7 @@ const templates = {
         )}<span><a class="ref-to-bibliography" href="#bibliography-${
             source.alias
         }">${escapeHtml(source.short)}${
-            source.short.at(-1) == '.' || source.short.at(-1) == ')' ? '' : '.'
+            source.short.at(-1).match(/[\.\?\!\)]/) ? '' : '.'
         }${templates.joinReferenceParts(
             ref.short,
             ref.extra || []
