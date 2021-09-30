@@ -2,12 +2,14 @@ import escapeHtml from 'escape-html';
 
 const templates = {
     fonts: (fonts) =>
-        `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${fonts
-            .map((f) => `family=${encodeURIComponent(f)}`)
-            .join('&amp;')}"/>`,
+        fonts.length
+            ? `<link rel="stylesheet" href="https://fonts.googleapis.com/css2?${fonts
+                  .map((f) => `family=${encodeURIComponent(f)}`)
+                  .join('&amp;')}"/>`
+            : '',
 
     screenHtml: (content, css, { l10n, fonts = [] }) => {
-        return `<html><head>
+        return `<!doctype html><html><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
             <meta name="author" content="${l10n.author}"/>
@@ -27,7 +29,7 @@ const templates = {
     },
 
     printHtml: (content, css, { l10n, fonts = [] }) => {
-        return `<html><head>
+        return `<!doctype html><html><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
             <meta name="author" content="${l10n.author}"/>

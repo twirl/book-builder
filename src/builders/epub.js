@@ -16,7 +16,7 @@ export default async ({ lang, l10n, structure, basePath, out }) => {
                     title: section.title.toUpperCase(),
                     data: `<h2>${section.title}</h2>`
                 });
-                section.chapters.forEach((chapter) => {
+                (section.chapters || [section]).forEach((chapter) => {
                     content.push({
                         title: chapter.title,
                         data: `<h3>${chapter.title}</h3>\n${chapter.content}`

@@ -1,5 +1,6 @@
 import { readdirSync, statSync, readFileSync } from 'fs';
 import { resolve } from 'path';
+import unorm from 'unorm';
 
 import defaultTemplates from './templates.js';
 import { htmlPreProcess } from './processors/html-pre-process.js';
@@ -84,8 +85,7 @@ const getStructure = async ({
     pipeline
 }) => {
     const structure = {
-        frontPage:
-            readFileSync(resolve(path, 'intro.html'), 'utf-8') + pageBreak,
+        frontPage: readFile(path, 'intro.html') + pageBreak,
         sections: [],
         references: []
     };
@@ -115,10 +115,7 @@ const getStructure = async ({
                 .sort()
                 .reduce(async (p, file) => {
                     const section = await p;
-                    const md = readFileSync(
-                        resolve(subdir, file),
-                        'utf-8'
-                    ).trim();
+                    const md = readFile(subdir, file).trim();
                     const content = await htmlPreProcess(
                         md,
                         {
@@ -146,4 +143,8 @@ const getStructure = async ({
         }, Promise.resolve(structure));
 
     return structure;
+};
+
+const readFile = (...parts) => {
+    return unorm.nfd(readFileSync(resolve(...parts), 'utf-8'));
 };
