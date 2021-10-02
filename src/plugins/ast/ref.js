@@ -30,11 +30,11 @@ export default () =>
                 const text = ref == 'ref' ? (match && match[1]) || value : null;
                 const alias =
                     ref == 'ref:' ? (match && match[1]) || value : null;
-                const anchor = `${data.anchor}-ref-${data.refCounter}`;
+                const anchor = `ref-${data.anchor}-no-${data.refCounter}`;
                 const backAnchor = `${anchor}-back`;
 
                 node.properties.href = '#' + anchor;
-                node.properties.name = backAnchor;
+                node.properties.id = backAnchor;
                 node.properties.className = ['ref'];
                 node.children = (
                     await htmlAst(

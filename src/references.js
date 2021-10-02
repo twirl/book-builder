@@ -1,48 +1,99 @@
-export const references = ({ sections }, { l10n, templates }) => {
-    const sources = {};
-    const preparedRefs = chaptersMap(sections, (chapter) => {
-        return (chapter.references || []).reduce((refs, ref, index) => {
-            let alias = ref.alias;
+export const references = {
+    append: ({ sections }, { l10n, templates }) => {
+        const sources = {};
+        const preparedRefs = chaptersMap(sections, (chapter) => {
+            return (chapter.references || []).reduce((refs, ref, index) => {
+                let alias = ref.alias;
 
-            if (alias) {
-                if (alias.at(0) == '{' && alias.at(-1) == '}') {
-                    try {
-                        const extra = JSON.parse(alias);
-                        alias = extra.source && extra.source.alias;
-                        if (alias) {
-                            sources[alias] = extra.source;
-                            refs.push({
-                                ...ref,
-                                ...extra,
-                                source: null,
-                                alias
-                            });
-                        } else {
-                            refs.push({
-                                ...ref,
-                                ...extra,
-                                source: null,
-                                alias: null
-                            });
+                if (alias) {
+                    if (alias.at(0) == '{' && alias.at(-1) == '}') {
+                        try {
+                            const extra = JSON.parse(alias);
+                            alias = extra.source && extra.source.alias;
+                            if (alias) {
+                                sources[alias] = extra.source;
+                                refs.push({
+                                    ...ref,
+                                    ...extra,
+                                    source: null,
+                                    alias
+                                });
+                            } else {
+                                refs.push({
+                                    ...ref,
+                                    ...extra,
+                                    source: null,
+                                    alias: null
+                                });
+                            }
+                        } catch (e) {
+                            throw new Error(`Cannot parse JSON ${alias}, ${e}`);
                         }
-                    } catch (e) {
-                        throw new Error(`Cannot parse JSON ${alias}, ${e}`);
+                    } else {
+                        refs.push({
+                            ...ref,
+                            alias
+                        });
                     }
                 } else {
-                    refs.push({
-                        ...ref,
-                        alias
-                    });
+                    refs.push(ref);
                 }
-            } else {
-                refs.push(ref);
-            }
 
-            return refs;
-        }, []);
-    });
-    return {
-        bibliography: {
+                return refs;
+            }, []);
+        });
+
+        sections.forEach((section, i) => {
+            if (section.chapters) {
+                section.chapters.forEach((chapter, j) => {
+                    const refs = preparedRefs[i] && preparedRefs[i].chapters[j];
+                    let previousRef = null;
+                    const items = [];
+                    refs.forEach((ref) => {
+                        const alias = ref.alias;
+                        if (!alias) {
+                            items.push(
+                                previousRef && ref.href == previousRef.href
+                                    ? templates.referenceIbid(ref, l10n)
+                                    : templates.referenceText(ref, l10n)
+                            );
+                        } else {
+                            let text;
+                            const source = sources[alias];
+                            if (!source) {
+                                //throw new Error(`Unknown source ${alias}`);
+                                text = 'Unknown source';
+                            } else if (
+                                previousRef &&
+                                previousRef.alias == alias &&
+                                previousRef.href == ref.href
+                            ) {
+                                text = templates.referenceSourceIbid(
+                                    ref,
+                                    source,
+                                    l10n,
+                                    previousRef.page != ref.page
+                                );
+                            } else {
+                                text = templates.referenceSourceFull(
+                                    ref,
+                                    source,
+                                    l10n
+                                );
+                            }
+                            items.push(text);
+                        }
+                        previousRef = ref;
+                    });
+
+                    chapter.content += items.length
+                        ? templates.referenceList(items, l10n)
+                        : '';
+                });
+            }
+        });
+
+        sections.push({
             anchor: 'bibliography',
             title: l10n.bibliography,
             content: templates.bibliography(
@@ -51,45 +102,8 @@ export const references = ({ sections }, { l10n, templates }) => {
                 }),
                 l10n
             )
-        },
-        sections: chaptersMap(preparedRefs, (refs) => {
-            let previousRef = null;
-            const items = [];
-            refs.forEach((ref) => {
-                const alias = ref.alias;
-                if (!alias) {
-                    items.push(
-                        previousRef && ref.href == previousRef.href
-                            ? templates.referenceIbid(ref, l10n)
-                            : templates.referenceText(ref, l10n)
-                    );
-                } else {
-                    let text;
-                    const source = sources[alias];
-                    if (!source) {
-                        //throw new Error(`Unknown source ${alias}`);
-                        text = 'Unknown source';
-                    } else if (
-                        previousRef &&
-                        previousRef.alias == alias &&
-                        previousRef.href == ref.href
-                    ) {
-                        text = templates.referenceSourceIbid(
-                            ref,
-                            source,
-                            l10n,
-                            previousRef.page != ref.page
-                        );
-                    } else {
-                        text = templates.referenceSourceFull(ref, source, l10n);
-                    }
-                    items.push(text);
-                }
-                previousRef = ref;
-            });
-            return items.length ? templates.referenceList(items, l10n) : null;
-        })
-    };
+        });
+    }
 };
 
 function chaptersMap(sections, callback) {

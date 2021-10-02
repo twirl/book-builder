@@ -9,7 +9,7 @@ const templates = {
             : '',
 
     screenHtml: (content, css, { l10n, fonts = [] }) => {
-        return `<!doctype html><html><head>
+        return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
             <meta name="author" content="${l10n.author}"/>
@@ -29,7 +29,7 @@ const templates = {
     },
 
     printHtml: (content, css, { l10n, fonts = [] }) => {
-        return `<!doctype html><html><head>
+        return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
             <meta name="author" content="${l10n.author}"/>
@@ -71,7 +71,7 @@ const templates = {
     link: (anchor, content, href, className = 'anchor') => {
         return `<a href="${escapeHtml(
             href || `#${anchor}`
-        )}" class="${className}" name="${escapeHtml(anchor)}">${content}</a>`;
+        )}" class="${className}" id="${escapeHtml(anchor)}">${content}</a>`;
     },
 
     sectionTitle: (section) => {
@@ -98,11 +98,11 @@ const templates = {
             .join('\n')}</ul>`,
 
     bibliographyItem: (item, l10n) =>
-        `<li><p><a class="alias" name="bibliography-${escapeHtml(
+        `<li><p><a class="alias" id="bibliography-${escapeHtml(
             item.alias
         )}">${templates
             .joinReferenceParts(item.short, item.extra || [])
-            .trim()}${
+            .trim()}</a>${
             item.href
                 ? `<br/><a target="_blank" class="external" href="${escapeHtml(
                       item.href
@@ -210,21 +210,25 @@ const templates = {
 
     aImg: ({ src, href, title, alt, l10n, className = 'img-wrapper' }) => {
         const fullTitle = escapeHtml(
-            `${title}. ${
+            `${title}${title.at(-1).match(/[\.\?\!\)]/) ? ' ' : '. '} ${
                 alt == 'PD' ? l10n.publicDomain : `${l10n.imageCredit}: ${alt}`
             }`
         );
-        return `<div className="${className}"><img src="${escapeHtml(
+        return `<div class="${escapeHtml(className)}"><img src="${escapeHtml(
             src
         )}" alt="${fullTitle}" title="${fullTitle}"/><h6>${escapeHtml(
             title
         )}</h6><h6>${
             alt == 'PD'
                 ? l10n.publicDomain
-                : `${l10n.imageCredit}: <a href="${escapeHtml(
+                : `${escapeHtml(l10n.imageCredit)}: ${
                       href
-                  )}" title="${fullTitle}"/>${escapeHtml(alt)}</a></h6>`
-        }`;
+                          ? `<a href="${escapeHtml(href)}">${escapeHtml(
+                                alt
+                            )}</a>`
+                          : escapeHtml(alt)
+                  }`
+        }</h6></div>`;
     }
 };
 

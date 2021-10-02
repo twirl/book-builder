@@ -1,8 +1,16 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
+import htmlValidator from 'html-validator';
 import Epub from 'epub-gen';
 
-export default async ({ lang, l10n, structure, basePath, out }) => {
+export default async ({
+    lang,
+    l10n,
+    structure,
+    basePath,
+    out,
+    htmlSourceValidator
+}) => {
     const epubData = {
         title: l10n.title,
         author: l10n.author,
@@ -34,6 +42,58 @@ export default async ({ lang, l10n, structure, basePath, out }) => {
         ),
         lang
     };
+    if (htmlSourceValidator) {
+        const errors = [];
+        const warnings = [];
+        const ignore = [
+            ...new Set(
+                [].concat(htmlSourceValidator.ignore || [], [
+                    'element-required-content',
+                    'heading-level',
+                    'element-required-attributes',
+                    'element-permitted-content'
+                ])
+            )
+        ];
+        for (let index = 0; index < epubData.content.length; index++) {
+            const { data } = epubData.content[index];
+            try {
+                const result = await htmlValidator({
+                    ...htmlSourceValidator,
+                    ignore,
+                    data: `${data}`,
+                    isFragment: true
+                });
+                if (result.errors.length) {
+                    errors.push({
+                        chapter: index + 1,
+                        errors: result.errors,
+                        data
+                    });
+                }
+                if (result.warnings.length) {
+                    warnings.push({
+                        chapter: index + 1,
+                        warnings: result.warnings
+                    });
+                }
+            } catch (error) {
+                console.error(
+                    `EPUB source chapter ${
+                        index + 1
+                    } validation error: ${JSON.stringify(error, null, 4)}`
+                );
+            }
+        }
+        console.log(
+            `EPUB source valid.\nErrors: ${JSON.stringify(
+                errors,
+                null,
+                4
+            )}\nWarnings: ${JSON.stringify(warnings, null, 4)}`
+        );
+    }
+
     const epub = new Epub(epubData, out);
     return epub.promise;
 };

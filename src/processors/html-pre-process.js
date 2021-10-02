@@ -5,7 +5,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 
 export const htmlPreProcess = async (value, data, plugins = []) => {
-    return unified()
+    const html = unified()
         .use(remarkParse)
         .use(remarkGfm)
         .use(remarkRehype)
@@ -15,6 +15,10 @@ export const htmlPreProcess = async (value, data, plugins = []) => {
             value,
             data
         });
+    if (data.reference) {
+        html += reference;
+    }
+    return html;
 };
 
 const createChapterProcessor = (plugins = []) => {

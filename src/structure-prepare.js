@@ -29,10 +29,7 @@ export const structurePrepare = async ({
         pipeline
     });
 
-    const reference = references(structure, { l10n, templates });
-    if (reference) {
-        structure.sections.push(reference.bibliography);
-    }
+    references.append(structure, { l10n, templates });
 
     const tocHtml = toc(structure, { templates, l10n });
     const htmlContent = [
@@ -50,16 +47,6 @@ export const structurePrepare = async ({
                             );
                         }
                         content.push(chapter.content);
-                        if (
-                            reference &&
-                            reference.sections[sectionIndex] &&
-                            reference.sections[sectionIndex].chapters &&
-                            reference.sections[sectionIndex].chapters[index]
-                        ) {
-                            content.push(
-                                reference.sections[sectionIndex].chapters[index]
-                            );
-                        }
                         return content;
                     },
                     [

@@ -17,6 +17,7 @@ class BookBuilder {
             html,
             l10n: this.options.l10n,
             basePath: this.options.basePath,
+            htmlSourceValidator: this.options.pipeline.htmlSourceValidator,
             out
         });
     }
