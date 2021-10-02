@@ -1,12 +1,13 @@
 {
     "name": "@twirl/book-builder",
-    "version": "0.0.6",
+    "version": "0.0.7",
     "type": "module",
     "description": "A lib to build HTML/PDF/FB2 e-book from Markdown source",
     "homepage": "https://github.com/twirl/The-Book-Builder",
     "license": "MIT",
     "author": "Sergey Konstantinov <twirl-team@yandex.ru>",
     "repository": "github.com:twirl/The-Book-Builder",
+    "main": "./index.js",
     "dependencies": {
         "css": "^3.0.0",
         "datauri": "^4.1.0",
