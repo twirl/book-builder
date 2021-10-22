@@ -1,4 +1,4 @@
-import datauri from 'datauri';
+import { dataUri } from '../../util/data-uri.js';
 
 export default () => {
     return async (tree, file, next) => {
@@ -15,8 +15,7 @@ export default () => {
         imageSearch(tree);
 
         for (const imageNode of images) {
-            const dataUri = await datauri(imageNode.properties.src);
-            imageNode.properties.src = dataUri;
+            imageNode.properties.src = await dataUri(imageNode.properties.src);
         }
 
         next();

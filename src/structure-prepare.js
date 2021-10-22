@@ -29,7 +29,7 @@ export const structurePrepare = async ({
         pipeline
     });
 
-    references.append(structure, { l10n, templates });
+    references.appendTo(structure, { l10n, templates });
 
     const tocHtml = toc(structure, { templates, l10n });
     const htmlContent = [

@@ -1,5 +1,5 @@
 export const references = {
-    append: ({ sections }, { l10n, templates }) => {
+    appendTo: ({ sections }, { l10n, templates }) => {
         const sources = {};
         const preparedRefs = chaptersMap(sections, (chapter) => {
             return (chapter.references || []).reduce((refs, ref, index) => {
@@ -61,8 +61,7 @@ export const references = {
                             let text;
                             const source = sources[alias];
                             if (!source) {
-                                //throw new Error(`Unknown source ${alias}`);
-                                text = 'Unknown source';
+                                throw new Error(`Unknown source ${alias}`);
                             } else if (
                                 previousRef &&
                                 previousRef.alias == alias &&
@@ -93,16 +92,18 @@ export const references = {
             }
         });
 
-        sections.push({
-            anchor: 'bibliography',
-            title: l10n.bibliography,
-            content: templates.bibliography(
-                Object.values(sources).sort((a, b) => {
-                    return a.short < b.short ? -1 : 1;
-                }),
-                l10n
-            )
-        });
+        if (Object.keys(sources).length) {
+            sections.push({
+                anchor: 'bibliography',
+                title: l10n.bibliography,
+                content: templates.bibliography(
+                    Object.values(sources).sort((a, b) => {
+                        return a.short < b.short ? -1 : 1;
+                    }),
+                    l10n
+                )
+            });
+        }
     }
 };
 

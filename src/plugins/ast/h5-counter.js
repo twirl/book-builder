@@ -25,7 +25,7 @@ export default () =>
                 tagName: 'a',
                 properties: {
                     href: '#' + anchor,
-                    name: anchor,
+                    id: anchor,
                     className: ['anchor']
                 },
                 children: [

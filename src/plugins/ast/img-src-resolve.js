@@ -1,12 +1,8 @@
-import { resolve } from 'path';
-
-const resolveSrc = (base, src) => {
-    return src.indexOf('/') == 0 ? resolve(base, src.slice(1)) : src;
-};
+import { resolveSrc } from '../../util/resolve-src.js';
 
 export default () =>
     async (node, { data: { base } }) => {
         if (node.tagName && node.tagName == 'img') {
-            node.properties.src = resolveSrc(base, node.properties.src);
+            node.properties.src = resolveSrc(node.properties.src, base);
         }
     };
