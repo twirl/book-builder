@@ -47,6 +47,7 @@ export const structurePrepare = async ({
                             );
                         }
                         content.push(chapter.content);
+                        content.push(pageBreak);
                         return content;
                     },
                     [
@@ -117,7 +118,7 @@ const getStructure = async ({
                     section.chapters.push({
                         anchor: content.data.anchor,
                         title: content.data.title,
-                        content: content.value + pageBreak,
+                        content: content.value,
                         references: content.data.references || null
                     });
                     refCounter = content.data.refCounter;
