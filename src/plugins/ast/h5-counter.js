@@ -1,18 +1,19 @@
 export default () =>
     async (node, { data: { templates, counter } }, context) => {
         if (node.tagName == 'h5') {
-            let value = node.children[0].value;
+            let value = node.children[0].value.trim();
             let number;
 
             if (!context.h5counter) {
                 context.h5counter = 0;
             }
 
-            const match = value.match(/^\d+/);
+            const match = value.match(/^(\d+)\.\s*/);
             if (!match) {
                 number = ++context.h5counter;
             } else {
-                number = match[0];
+                number = Number(match[1]);
+                value = value.slice(match[0].length);
             }
             value = templates.h5Value({
                 value,

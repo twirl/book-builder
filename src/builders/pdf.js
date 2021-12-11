@@ -23,7 +23,10 @@ export default async function ({ out, html, htmlSourceValidator }) {
         }
     }
 
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({
+        headless: true,
+        product: 'chrome'
+    });
     const page = await browser.newPage();
 
     await page.setContent(html, {
