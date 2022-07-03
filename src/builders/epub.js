@@ -19,7 +19,6 @@ export default async ({
         appendChapterTitles: false,
         content: structure.sections.reduce(
             (content, section) => {
-                if (!section.title) debugger;
                 content.push({
                     title: section.title.toUpperCase(),
                     data: `<h2>${section.title}</h2>`
@@ -34,7 +33,7 @@ export default async ({
             },
             [
                 {
-                    title: l10n.frontPage,
+                    title: l10n.frontPage.pageTitle,
                     data: structure.frontPage,
                     beforeToc: true
                 }

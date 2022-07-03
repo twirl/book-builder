@@ -1,5 +1,7 @@
 export const references = {
     appendTo: ({ sections }, { l10n, templates }) => {
+        let totalSources = 0;
+        let totalRefs = 0;
         const sources = {};
         const preparedRefs = chaptersMap(sections, (chapter) => {
             return (chapter.references || []).reduce((refs, ref, index) => {
@@ -43,6 +45,7 @@ export const references = {
             }, []);
         });
 
+        totalSources = Object.keys(sources).length;
         sections.forEach((section, i) => {
             if (section.chapters) {
                 section.chapters.forEach((chapter, j) => {
@@ -50,8 +53,10 @@ export const references = {
                     let previousRef = null;
                     const items = [];
                     refs.forEach((ref) => {
+                        totalRefs++;
                         const alias = ref.alias;
                         if (!alias) {
+                            totalSources++;
                             items.push(
                                 previousRef && ref.href == previousRef.href
                                     ? templates.referenceIbid(ref, l10n)
@@ -104,6 +109,9 @@ export const references = {
                 )
             });
         }
+        console.log(
+            `Total references: ${totalRefs}\nTotal sources: ${totalSources}`
+        );
     }
 };
 

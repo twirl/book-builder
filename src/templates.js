@@ -8,7 +8,7 @@ const templates = {
                   .join('&amp;')}"/>`
             : '',
 
-    screenHtml: (content, css, { l10n, fonts = [] }) => {
+    screenHtml: (content, css, { l10n, fonts = [], resolveSrc }) => {
         return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
@@ -19,6 +19,7 @@ const templates = {
             <meta property="og:type" content="article"/>
             <meta property="og:description" content="${l10n.description}"/>
             <meta property="og:locale" content="${l10n.locale}"/>
+            <link rel="icon" href="${resolveSrc(l10n.favicon)}"/>
             ${templates.fonts(fonts)}
             <style>${css}</style>
         </head><body>
@@ -183,7 +184,7 @@ const templates = {
     referenceBackLink: ({ anchor, localCounter, backAnchor }) =>
         templates.link(
             anchor,
-            `<sup>${localCounter}</sup>`,
+            `<sup>${localCounter}</sup> `,
             `#${backAnchor}`,
             'back-anchor'
         ),

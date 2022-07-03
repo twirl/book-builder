@@ -72,14 +72,16 @@ const getStructure = async ({
     templates,
     pipeline
 }) => {
-    const structure = {
-        frontPage: readFile(path, 'intro.html') + pageBreak,
-        sections: [],
-        references: []
-    };
     const plugins = (pipeline && pipeline.ast && pipeline.ast.preProcess) || [];
     let counter = 1;
     let refCounter = 0;
+    const structure = {
+        frontPage: templates.frontPage
+            ? templates.frontPage(l10n)
+            : readFile(path, 'intro.html') + pageBreak,
+        sections: [],
+        references: []
+    };
 
     await readdirSync(path)
         .filter((p) => statSync(resolve(path, p)).isDirectory())
