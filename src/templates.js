@@ -24,7 +24,11 @@ const templates = {
             <style>${css}</style>
         </head><body>
             <article>
-                ${templates.content ? templates.content(content) : content}
+                ${
+                    templates.content
+                        ? templates.content(content, { l10n })
+                        : content
+                }
             </article>
         </body></html>`;
     },
