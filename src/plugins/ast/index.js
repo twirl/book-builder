@@ -5,6 +5,7 @@ import h5Counter from './h5-counter.js';
 import incuts from './incuts.js';
 import ref from './ref.js';
 import ghTableFix from './gh-tables-fix.js';
+import mermaid from './mermaid.js';
 
 export default {
     imgSrcResolve,
@@ -13,5 +14,6 @@ export default {
     h5Counter,
     incuts,
     ref,
-    ghTableFix
+    ghTableFix,
+    mermaid
 };

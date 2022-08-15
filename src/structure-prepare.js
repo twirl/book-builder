@@ -97,6 +97,7 @@ const getStructure = async ({
 
             const subdir = resolve(path, dir);
             await readdirSync(subdir)
+                .filter((p) => p == '03.md')
                 .filter(
                     (p) =>
                         statSync(resolve(subdir, p)).isFile() &&

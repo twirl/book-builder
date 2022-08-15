@@ -24,7 +24,7 @@ const templates = {
             <style>${css}</style>
         </head><body>
             <article>
-                ${content}
+                ${templates.content ? templates.content(content) : content}
             </article>
         </body></html>`;
     },
@@ -230,6 +230,10 @@ const templates = {
                           : escapeHtml(alt)
                   }`
         }</h6></div>`;
+    },
+
+    mermaid: ({ svg }) => {
+        return `<div class="mermaid-svg">${svg}</div>`;
     }
 };
 

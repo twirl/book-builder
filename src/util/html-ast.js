@@ -2,12 +2,12 @@ import htmlValidator from 'html-validator';
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 
-export const htmlAst = async (value) => {
+export const htmlAst = async (value, ignoreRules = []) => {
     const result = await htmlValidator({
         data: value,
         validator: 'WHATWG',
         isFragment: true,
-        ignore: ['heading-level']
+        ignore: ['heading-level', ...ignoreRules]
     });
     if (result.errors.length) {
         throw new Error(
