@@ -8,7 +8,11 @@ const templates = {
                   .join('&amp;')}"/>`
             : '',
 
-    screenHtml: (content, css, { l10n, fonts = [], resolveSrc }) => {
+    screenHtml: (
+        content,
+        css,
+        { l10n, fonts = [], resolveSrc, structure, templates }
+    ) => {
         return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
@@ -22,16 +26,14 @@ const templates = {
             <link rel="icon" href="${resolveSrc(l10n.favicon)}"/>
             ${templates.fonts(fonts)}
             <style>${css}</style>
-        </head><body>
-            <article>
-                ${
-                    templates.content
-                        ? templates.content(content, { l10n })
-                        : content
-                }
-            </article>
-        </body></html>`;
+        </head><body>${templates.screenContent(content, css, {
+            structure,
+            l10n,
+            resolveSrc
+        })}</body></html>`;
     },
+
+    screenContent: (content) => `<article>${content}</article>`,
 
     printHtml: (content, css, { l10n, fonts = [] }) => {
         return `<!doctype html><html lang="${l10n.locale}"><head>

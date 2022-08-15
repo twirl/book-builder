@@ -12,7 +12,8 @@ export const structurePrepare = async ({
     basePath,
     l10n,
     templates = {},
-    pipeline
+    pipeline,
+    chapters
 }) => {
     templates = {
         ...defaultTemplates,
@@ -20,13 +21,22 @@ export const structurePrepare = async ({
     };
     const pageBreak = templates.pageBreak;
 
+    let begin, end;
+    if (chapters) {
+        [begin, end] = chapters
+            .split('-')
+            .map((v, i, arr) => (v ? Number(v) : Number(arr[i - 1] + 1)));
+    }
+
     const structure = await getStructure({
         path,
         basePath,
         l10n,
         templates,
         pageBreak,
-        pipeline
+        pipeline,
+        begin,
+        end
     });
 
     references.appendTo(structure, { l10n, templates });
@@ -70,7 +80,9 @@ const getStructure = async ({
     l10n,
     pageBreak,
     templates,
-    pipeline
+    pipeline,
+    begin,
+    end
 }) => {
     const plugins = (pipeline && pipeline.ast && pipeline.ast.preProcess) || [];
     let counter = 1;
@@ -97,34 +109,35 @@ const getStructure = async ({
 
             const subdir = resolve(path, dir);
             await readdirSync(subdir)
-                .filter((p) => p == '03.md')
                 .filter(
                     (p) =>
                         statSync(resolve(subdir, p)).isFile() &&
                         p.indexOf('.md') == p.length - 3
                 )
                 .sort()
-                .reduce(async (p, file) => {
+                .reduce(async (p, file, i) => {
                     const section = await p;
-                    const md = readFile(subdir, file).trim();
-                    const content = await htmlPreProcess(
-                        md,
-                        {
-                            counter,
-                            refCounter,
-                            l10n,
-                            base: basePath,
-                            templates
-                        },
-                        plugins
-                    );
-                    section.chapters.push({
-                        anchor: content.data.anchor,
-                        title: content.data.title,
-                        content: content.value,
-                        references: content.data.references || null
-                    });
-                    refCounter = content.data.refCounter;
+                    if (!begin || (counter >= begin && counter <= end)) {
+                        const md = readFile(subdir, file).trim();
+                        const content = await htmlPreProcess(
+                            md,
+                            {
+                                counter,
+                                refCounter,
+                                l10n,
+                                base: basePath,
+                                templates
+                            },
+                            plugins
+                        );
+                        section.chapters.push({
+                            anchor: content.data.anchor,
+                            title: content.data.title,
+                            content: content.value,
+                            references: content.data.references || null
+                        });
+                        refCounter = content.data.refCounter;
+                    }
                     counter++;
                     return section;
                 }, Promise.resolve(section));

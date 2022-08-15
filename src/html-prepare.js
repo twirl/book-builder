@@ -2,7 +2,7 @@ import { cssPrepare } from './css-prepare.js';
 import { htmlPostProcess } from './processors/html-post-process.js';
 import { resolveSrc } from './util/resolve-src.js';
 
-export const htmlPrepare = async (target, content, options) => {
+export const htmlPrepare = async (target, { content, options, structure }) => {
     const { templates, pipeline } = options;
     if (target == 'epub') {
         return '';
@@ -18,6 +18,7 @@ export const htmlPrepare = async (target, content, options) => {
                 css,
                 {
                     ...options,
+                    structure,
                     resolveSrc: (src) => resolveSrc(src, options.basePath)
                 }
             ),
