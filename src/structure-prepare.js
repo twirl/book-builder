@@ -45,29 +45,32 @@ export const structurePrepare = async ({
     const htmlContent = [
         structure.frontPage,
         tocHtml,
-        ...structure.sections.map((section, sectionIndex) =>
-            (section.chapters || [])
-                .reduce(
-                    (content, chapter, index) => {
-                        if (chapter.title) {
-                            content.push(
-                                templates.chapterTitle(chapter, {
-                                    number: index + 1
-                                })
-                            );
-                        }
-                        content.push(chapter.content);
-                        content.push(pageBreak);
-                        return content;
-                    },
-                    [
-                        templates.sectionTitle(section, {
-                            number: sectionIndex + 1
-                        }),
-                        section.content || ''
-                    ]
-                )
-                .join('')
+        templates.mainContent(
+            ...structure.sections.map((section, sectionIndex) =>
+                (section.chapters || [])
+                    .reduce(
+                        (content, chapter, index) => {
+                            if (chapter.title) {
+                                content.push(
+                                    templates.chapterTitle(chapter, {
+                                        number: index + 1
+                                    })
+                                );
+                            }
+                            content.push(chapter.content);
+                            content.push(pageBreak);
+                            return content;
+                        },
+                        [
+                            templates.sectionTitle(section, {
+                                number: sectionIndex + 1
+                            }),
+                            section.content || ''
+                        ]
+                    )
+                    .join('')
+            ),
+            { l10n }
         )
     ];
 

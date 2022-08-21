@@ -29,13 +29,13 @@ const templates = {
         </head><body>${templates.screenContent(content, css, {
             structure,
             l10n,
-            resolveSrc
+            templates
         })}</body></html>`;
     },
 
     screenContent: (content) => `<article>${content}</article>`,
 
-    printHtml: (content, css, { l10n, fonts = [] }) => {
+    printHtml: (content, css, { l10n, fonts = [], templates }) => {
         return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
             <title>${l10n.author}. ${l10n.title}</title>
@@ -56,6 +56,9 @@ const templates = {
     },
 
     pageBreak: '<div style="page-break-after: always;"></div>',
+
+    mainContent: (content) =>
+        `<section class="main-content">${content}</section>`,
 
     toc: (structure, l10n) => {
         return `<nav><h2 class="toc">${
