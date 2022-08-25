@@ -46,30 +46,32 @@ export const structurePrepare = async ({
         structure.frontPage,
         tocHtml,
         templates.mainContent(
-            ...structure.sections.map((section, sectionIndex) =>
-                (section.chapters || [])
-                    .reduce(
-                        (content, chapter, index) => {
-                            if (chapter.title) {
-                                content.push(
-                                    templates.chapterTitle(chapter, {
-                                        number: index + 1
-                                    })
-                                );
-                            }
-                            content.push(chapter.content);
-                            content.push(pageBreak);
-                            return content;
-                        },
-                        [
-                            templates.sectionTitle(section, {
-                                number: sectionIndex + 1
-                            }),
-                            section.content || ''
-                        ]
-                    )
-                    .join('')
-            ),
+            structure.sections
+                .map((section, sectionIndex) =>
+                    (section.chapters || [])
+                        .reduce(
+                            (content, chapter, index) => {
+                                if (chapter.title) {
+                                    content.push(
+                                        templates.chapterTitle(chapter, {
+                                            number: index + 1
+                                        })
+                                    );
+                                }
+                                content.push(chapter.content);
+                                content.push(pageBreak);
+                                return content;
+                            },
+                            [
+                                templates.sectionTitle(section, {
+                                    number: sectionIndex + 1
+                                }),
+                                section.content || ''
+                            ]
+                        )
+                        .join('')
+                )
+                .join(''),
             { l10n }
         )
     ];
@@ -92,7 +94,7 @@ const getStructure = async ({
     let refCounter = 0;
     const structure = {
         frontPage: templates.frontPage
-            ? templates.frontPage(l10n)
+            ? templates.frontPage({ templates, l10n })
             : readFile(path, 'intro.html') + pageBreak,
         sections: [],
         references: []

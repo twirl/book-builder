@@ -38,6 +38,7 @@ const templates = {
     printHtml: (content, css, { l10n, fonts = [], templates }) => {
         return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>${l10n.author}. ${l10n.title}</title>
             <meta name="author" content="${l10n.author}"/>
             <meta name="description" content="${l10n.description}"/>
