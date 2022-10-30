@@ -7,14 +7,10 @@ import { htmlPreProcess } from './processors/html-pre-process.js';
 import { toc } from './toc.js';
 import { references } from './references.js';
 
-export const structurePrepare = async ({
-    path,
-    basePath,
-    l10n,
-    templates = {},
-    pipeline,
-    chapters
-}) => {
+export const structurePrepare = async (
+    { path, basePath, l10n, templates = {}, pipeline, chapters },
+    cache
+) => {
     templates = {
         ...defaultTemplates,
         ...templates
@@ -28,16 +24,19 @@ export const structurePrepare = async ({
             .map((v, i, arr) => (v ? Number(v) : Number(arr[i - 1] + 1)));
     }
 
-    const structure = await getStructure({
-        path,
-        basePath,
-        l10n,
-        templates,
-        pageBreak,
-        pipeline,
-        begin,
-        end
-    });
+    const structure = await getStructure(
+        {
+            path,
+            basePath,
+            l10n,
+            templates,
+            pageBreak,
+            pipeline,
+            begin,
+            end
+        },
+        cache
+    );
 
     references.appendTo(structure, { l10n, templates });
 
@@ -79,16 +78,10 @@ export const structurePrepare = async ({
     return { structure, html: htmlContent.join(''), templates };
 };
 
-const getStructure = async ({
-    path,
-    basePath,
-    l10n,
-    pageBreak,
-    templates,
-    pipeline,
-    begin,
-    end
-}) => {
+const getStructure = async (
+    { path, basePath, l10n, pageBreak, templates, pipeline, begin, end },
+    cache
+) => {
     const plugins = (pipeline && pipeline.ast && pipeline.ast.preProcess) || [];
     let counter = 1;
     let refCounter = 0;
@@ -106,13 +99,13 @@ const getStructure = async ({
         .reduce(async (p, dir, index) => {
             const structure = await p;
             const name = dir.split('-')[1];
+            const subdir = resolve(path, dir);
             const section = {
                 title: name,
                 anchor: `section-${index + 1}`,
                 chapters: []
             };
 
-            const subdir = resolve(path, dir);
             await readdirSync(subdir)
                 .filter(
                     (p) =>
@@ -123,18 +116,30 @@ const getStructure = async ({
                 .reduce(async (p, file, i) => {
                     const section = await p;
                     if (!begin || (counter >= begin && counter <= end)) {
-                        const md = readFile(subdir, file).trim();
-                        const content = await htmlPreProcess(
-                            md,
-                            {
-                                counter,
-                                refCounter,
-                                l10n,
-                                base: basePath,
-                                templates
-                            },
-                            plugins
+                        const filePath = resolve(subdir, file);
+                        let content = await cache.get(
+                            filePath,
+                            statSync(filePath).mtimeMs,
+                            true
                         );
+                        if (!content) {
+                            console.log(`Prepare contents of ${filePath}`);
+                            const md = readFile(subdir, file).trim();
+                            content = await htmlPreProcess(
+                                md,
+                                {
+                                    counter,
+                                    refCounter,
+                                    l10n,
+                                    base: basePath,
+                                    templates
+                                },
+                                plugins
+                            );
+                            await cache.put(filePath, content);
+                        } else {
+                            console.log(`Got cached contents of ${filePath}`);
+                        }
                         section.chapters.push({
                             anchor: content.data.anchor,
                             title: content.data.title,
