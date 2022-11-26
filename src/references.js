@@ -1,7 +1,8 @@
 export const references = {
-    appendTo: ({ sections }, { l10n, templates }) => {
+    appendTo: (structure, { l10n, templates }) => {
         let totalSources = 0;
         let totalRefs = 0;
+        const sections = structure.sections;
         const sources = {};
         const preparedRefs = chaptersMap(sections, (chapter) => {
             return (chapter.references || []).reduce((refs, ref, index) => {
@@ -109,9 +110,9 @@ export const references = {
                 )
             });
         }
-        console.log(
-            `Total references: ${totalRefs}\nTotal sources: ${totalSources}`
-        );
+
+        structure.sources = totalSources;
+        structure.references = totalRefs;
     }
 };
 

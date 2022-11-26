@@ -85,6 +85,10 @@ const getStructure = async (
     const plugins = (pipeline && pipeline.ast && pipeline.ast.preProcess) || [];
     let counter = 1;
     let refCounter = 0;
+    let stat = {
+        words: 0,
+        characters: 0
+    };
     const structure = {
         frontPage: templates.frontPage
             ? templates.frontPage({ templates, l10n })
@@ -130,6 +134,7 @@ const getStructure = async (
                                 {
                                     counter,
                                     refCounter,
+                                    stat,
                                     l10n,
                                     base: basePath,
                                     templates
@@ -147,6 +152,7 @@ const getStructure = async (
                             references: content.data.references || null
                         });
                         refCounter = content.data.refCounter;
+                        stat = content.data.stat;
                     }
                     counter++;
                     return section;
@@ -155,6 +161,9 @@ const getStructure = async (
             structure.sections.push(section);
             return structure;
         }, Promise.resolve(structure));
+
+    structure.words = stat?.words;
+    structure.characters = stat?.characters;
 
     return structure;
 };

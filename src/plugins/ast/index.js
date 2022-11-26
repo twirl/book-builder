@@ -6,6 +6,7 @@ import incuts from './incuts.js';
 import ref from './ref.js';
 import ghTableFix from './gh-tables-fix.js';
 import mermaid from './mermaid.js';
+import stat from './stat.js';
 
 export default {
     imgSrcResolve,
@@ -15,5 +16,6 @@ export default {
     incuts,
     ref,
     ghTableFix,
-    mermaid
+    mermaid,
+    stat
 };
