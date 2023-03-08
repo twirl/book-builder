@@ -229,7 +229,7 @@ const templates = {
             src
         )}" alt="${fullTitle}" title="${fullTitle}"/><h6>${escapeHtml(
             title
-        )}</h6><h6>${
+        )}. ${
             alt == 'PD'
                 ? l10n.publicDomain
                 : `${escapeHtml(l10n.imageCredit)}: ${

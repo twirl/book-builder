@@ -18,13 +18,11 @@ export async function dataUri(src) {
     } else {
         data = readFileSync(src);
     }
-    return (
-        parser
-            .format(`.${format}`, data)
-            .content// Stupid bug in mimer
-            .replace(
-                'data:image/png',
-                `data:image/${format == 'svg' ? 'svg+xml' : format}`
-            )
-    );
+    return parser
+        .format(`.${format}`, data)
+        .content // Stupid bug in mimer
+        .replace(
+            'data:image/png',
+            `data:image/${format == 'svg' ? 'svg+xml' : format}`
+        );
 }
