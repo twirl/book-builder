@@ -1,7 +1,18 @@
 export default () =>
     async (node, { data: { titleParts } }) => {
         if (node.tagName == 'h3') {
-            titleParts.push(node.children[0].value);
+            const value = node.children[0].value.trim();
+            const match = value.match(/^\[(.+)\]\[(.+)\]$/);
+            titleParts.push(
+                match
+                    ? {
+                          title: match[1],
+                          anchor: match[2]
+                      }
+                    : {
+                          title: node.children[0].value
+                      }
+            );
             return 'deleted';
         }
     };

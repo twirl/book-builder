@@ -67,7 +67,8 @@ export const references = {
                             let text;
                             const source = sources[alias];
                             if (!source) {
-                                throw new Error(`Unknown source ${alias}`);
+                                console.error(`Unknown source ${alias}`);
+                                //throw new Error(`Unknown source ${alias}`);
                             } else if (
                                 previousRef &&
                                 previousRef.alias == alias &&

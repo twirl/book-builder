@@ -92,11 +92,22 @@ const templates = {
     },
 
     chapterTitle: (chapter) => {
-        return `<h3>${templates.link(chapter.anchor, chapter.title)}</h3>`;
+        return `<h3>${templates.link(chapter.anchor, chapter.title)}${
+            chapter.secondaryAnchor
+                ? templates.link(
+                      chapter.secondaryAnchor,
+                      ' ',
+                      undefined,
+                      'secondary-anchor'
+                  )
+                : ''
+        }</h3>`;
     },
 
     chapterTitleValue: ({ titleParts, l10n, counter }) => {
-        return `${l10n.chapter} ${counter}. ${titleParts.join('. ')}`;
+        return `${l10n.chapter} ${counter}. ${titleParts
+            .map(({ title }) => title)
+            .join('. ')}`;
     },
 
     reference: ({ localCounter }) => {

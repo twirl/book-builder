@@ -2,9 +2,11 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import htmlValidator from 'html-validator';
 import Epub from 'epub-gen';
+import { normalize } from 'normalize-diacritics';
 
 export default async ({
     lang,
+    cover,
     l10n,
     structure,
     basePath,
@@ -26,7 +28,9 @@ export default async ({
                 (section.chapters || [section]).forEach((chapter) => {
                     content.push({
                         title: chapter.title,
-                        data: `<h3>${chapter.title}</h3>\n${chapter.content}`
+                        data: `<h3>${
+                            chapter.title
+                        }</h3>\n${removeBibliographyLinks(chapter.content)}`
                     });
                 });
                 return content;
@@ -39,7 +43,8 @@ export default async ({
                 }
             ]
         ),
-        lang
+        lang,
+        cover
     };
     if (htmlSourceValidator) {
         const errors = [];
@@ -96,3 +101,10 @@ export default async ({
     const epub = new Epub(epubData, out);
     return epub.promise;
 };
+
+export function removeBibliographyLinks(str) {
+    return str.replace(
+        /\<a [^>]+bibliography-[^>]+\>([^\<]+)\<\/a>/g,
+        '<span>$1</span>'
+    );
+}

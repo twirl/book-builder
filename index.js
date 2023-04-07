@@ -37,6 +37,8 @@ class BookBuilder {
         return builders[target]({
             structure: this.structure,
             html,
+            cover: this.options.cover,
+            lang: this.options.lang,
             l10n: this.options.l10n,
             basePath: this.options.basePath,
             htmlSourceValidator: this.options.pipeline.htmlSourceValidator,

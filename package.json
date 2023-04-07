@@ -1,6 +1,6 @@
 {
     "name": "@twirl/book-builder",
-    "version": "0.0.20",
+    "version": "0.0.21",
     "type": "module",
     "description": "A lib to build HTML/PDF/FB2 e-book from Markdown source",
     "homepage": "https://github.com/twirl/The-Book-Builder",

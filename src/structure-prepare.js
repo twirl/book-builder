@@ -127,7 +127,6 @@ const getStructure = async (
                             true
                         );
                         if (!content) {
-                            console.log(`Prepare contents of ${filePath}`);
                             const md = readFile(subdir, file).trim();
                             content = await htmlPreProcess(
                                 md,
@@ -142,11 +141,10 @@ const getStructure = async (
                                 plugins
                             );
                             await cache.put(filePath, content);
-                        } else {
-                            console.log(`Got cached contents of ${filePath}`);
                         }
                         section.chapters.push({
                             anchor: content.data.anchor,
+                            secondaryAnchor: content.data.secondaryAnchor,
                             title: content.data.title,
                             content: content.value,
                             references: content.data.references || null

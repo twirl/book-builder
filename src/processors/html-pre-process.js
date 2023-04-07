@@ -44,6 +44,11 @@ const createChapterProcessor = (plugins = []) => {
             l10n,
             counter
         });
+        const custom = file.data.titleParts.find((t) => Boolean(t.anchor));
+        if (custom) {
+            file.data.secondaryAnchor = file.data.anchor;
+            file.data.anchor = custom.anchor;
+        }
 
         file.data.counter++;
         file.data.localContext = null;
