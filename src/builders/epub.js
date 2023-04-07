@@ -2,7 +2,6 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import htmlValidator from 'html-validator';
 import Epub from 'epub-gen';
-import { normalize } from 'normalize-diacritics';
 
 export default async ({
     lang,
