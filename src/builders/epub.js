@@ -3,6 +3,8 @@ import { resolve } from 'path';
 import htmlValidator from 'html-validator';
 import Epub from 'epub-gen';
 
+import { references } from '../references.js';
+
 export default async ({
     lang,
     cover,
@@ -15,6 +17,7 @@ export default async ({
     const epubData = {
         title: l10n.title,
         author: l10n.author,
+        publisher: l10n.publisher,
         css: readFileSync(resolve(basePath, 'css/epub.css')),
         tocTitle: l10n.toc,
         appendChapterTitles: false,
@@ -27,9 +30,10 @@ export default async ({
                 (section.chapters || [section]).forEach((chapter) => {
                     content.push({
                         title: chapter.title,
-                        data: `<h3>${
-                            chapter.title
-                        }</h3>\n${removeBibliographyLinks(chapter.content)}`
+                        filename: chapter.filename,
+                        data: `<h3>${chapter.title}</h3>\n${fixLinks(
+                            chapter.content
+                        )}`
                     });
                 });
                 return content;
@@ -101,9 +105,29 @@ export default async ({
     return epub.promise;
 };
 
-export function removeBibliographyLinks(str) {
-    return str.replace(
-        /\<a [^>]+bibliography-[^>]+\>([^\<]+)\<\/a>/g,
-        '<span>$1</span>'
-    );
+export function fixLinks(str) {
+    const result = [];
+    const internalLinkRe = /href\s*=\s*"\s*#([^"]+)"/g;
+    let pos = 0;
+    let match;
+    while ((match = internalLinkRe.exec(str)) != null) {
+        if (match.index !== pos) {
+            result.push(str.slice(pos, match.index));
+        }
+        let href = match[1].trim();
+        if (href.startsWith(references.BIBLIOGRAPHY_ANCHOR)) {
+            href = `href="${references.BIBLIOGRAPHY_ANCHOR}.xhtml#${href}"`;
+        } else if (href.match(/chapter-\d+-paragraph-\d+/)) {
+            href = '';
+        } else {
+            href = `href="${href}.xhtml#${href}"`;
+        }
+        result.push(href);
+        pos = match.index + match[0].length;
+    }
+    if (pos != str.length) {
+        result.push(str.slice(pos));
+    }
+
+    return result.join('');
 }

@@ -114,13 +114,13 @@ const templates = {
         return `<sup>${localCounter}</sup>`;
     },
 
-    bibliography: (items, l10n) =>
+    bibliography: (items, l10n, anchor) =>
         `<ul class="bibliography">${items
-            .map((item) => templates.bibliographyItem(item, l10n))
+            .map((item) => templates.bibliographyItem(item, l10n, anchor))
             .join('\n')}</ul>`,
 
-    bibliographyItem: (item, l10n) =>
-        `<li><p><a class="alias" id="bibliography-${escapeHtml(
+    bibliographyItem: (item, l10n, anchor) =>
+        `<li><p><a class="alias" id="${anchor}-${escapeHtml(
             item.alias
         )}">${templates
             .joinReferenceParts(item.short, item.extra || [])
@@ -183,11 +183,11 @@ const templates = {
             samePage ? templates.referencePage(ref, l10n) : ''
         }</span>`,
 
-    referenceSourceFull: (ref, source, l10n) =>
+    referenceSourceFull: (ref, source, l10n, anchor) =>
         `${templates.referenceBackLink(
             ref,
             l10n
-        )}<span><a class="ref-to-bibliography" href="#bibliography-${
+        )}<span><a class="ref-to-bibliography" href="#${anchor}-${
             source.alias
         }">${escapeHtml(source.short)}${
             source.short.at(-1).match(/[\.\?\!\)]/) ? '' : '.'

@@ -1,4 +1,5 @@
 export const references = {
+    BIBLIOGRAPHY_ANCHOR: 'bibliography',
     appendTo: (structure, { l10n, templates }) => {
         let totalSources = 0;
         let totalRefs = 0;
@@ -84,7 +85,8 @@ export const references = {
                                 text = templates.referenceSourceFull(
                                     ref,
                                     source,
-                                    l10n
+                                    l10n,
+                                    references.BIBLIOGRAPHY_ANCHOR
                                 );
                             }
                             items.push(text);
@@ -101,13 +103,15 @@ export const references = {
 
         if (Object.keys(sources).length) {
             sections.push({
-                anchor: 'bibliography',
+                anchor: references.BIBLIOGRAPHY_ANCHOR,
                 title: l10n.bibliography,
+                filename: references.BIBLIOGRAPHY_ANCHOR,
                 content: templates.bibliography(
                     Object.values(sources).sort((a, b) => {
                         return a.short < b.short ? -1 : 1;
                     }),
-                    l10n
+                    l10n,
+                    BIBLIOGRAPHY_ANCHOR
                 )
             });
         }

@@ -107,6 +107,7 @@ const getStructure = async (
             const section = {
                 title: name,
                 anchor: `section-${index + 1}`,
+                filename: `section-${index + 1}.xhtml`,
                 chapters: []
             };
 
@@ -144,6 +145,7 @@ const getStructure = async (
                         }
                         section.chapters.push({
                             anchor: content.data.anchor,
+                            filename: `${content.data.anchor}.xhtml`,
                             secondaryAnchor: content.data.secondaryAnchor,
                             title: content.data.title,
                             content: content.value,

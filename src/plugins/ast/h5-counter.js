@@ -14,12 +14,13 @@ export default () =>
             } else {
                 number = Number(match[1]);
                 value = value.slice(match[0].length);
+                context.h5counter++;
             }
             value = templates.h5Value({
                 value,
                 number
             });
-            const anchor = `chapter-${counter}-paragraph-${number}`;
+            const anchor = `chapter-${counter}-paragraph-${context.h5counter}`;
 
             node.children[0] = {
                 type: 'element',
