@@ -5,7 +5,7 @@ import h5Counter from './h5-counter.js';
 import incuts from './incuts.js';
 import ref from './ref.js';
 import ghTableFix from './gh-tables-fix.js';
-import mermaid from './mermaid.js';
+import highlighter from './highlighter.js';
 import stat from './stat.js';
 
 export default {
@@ -16,6 +16,6 @@ export default {
     incuts,
     ref,
     ghTableFix,
-    mermaid,
+    highlighter,
     stat
 };

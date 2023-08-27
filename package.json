@@ -1,6 +1,6 @@
 {
     "name": "@twirl/book-builder",
-    "version": "0.0.23",
+    "version": "0.0.24",
     "type": "module",
     "description": "A lib to build HTML/PDF/FB2 e-book from Markdown source",
     "homepage": "https://github.com/twirl/The-Book-Builder",
@@ -14,16 +14,16 @@
         "datauri": "^4.1.0",
         "epub-gen": "^0.1.0",
         "escape-html": "^1.0.3",
-        "html-validator": "^6.0.0",
+        "highlight.js": "^11.8.0",
+        "html-validator": "^6.0.1",
         "image-data-uri": "^2.0.1",
-        "mermaid-cli": "^0.2.4",
-        "puppeteer": "^13.0.0",
-        "rehype-parse": "^8.0.3",
-        "rehype-stringify": "^9.0.2",
+        "puppeteer": "^13.7.0",
+        "rehype-parse": "^8.0.5",
+        "rehype-stringify": "^9.0.4",
         "remark-gfm": "^3.0.1",
-        "remark-parse": "^10.0.0",
+        "remark-parse": "^10.0.2",
         "remark-rehype": "^10.1.0",
-        "unified": "^10.1.0",
+        "unified": "^10.1.2",
         "unorm": "^1.6.0"
     }
 }

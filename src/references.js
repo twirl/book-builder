@@ -62,7 +62,11 @@ export const references = {
                             items.push(
                                 previousRef && ref.href == previousRef.href
                                     ? templates.referenceIbid(ref, l10n)
-                                    : templates.referenceText(ref, l10n)
+                                    : templates.referenceText(
+                                          ref,
+                                          l10n,
+                                          templates
+                                      )
                             );
                         } else {
                             let text;

@@ -122,11 +122,13 @@ const getStructure = async (
                     const section = await p;
                     if (!begin || (counter >= begin && counter <= end)) {
                         const filePath = resolve(subdir, file);
-                        let content = await cache.get(
-                            filePath,
-                            statSync(filePath).mtimeMs,
-                            true
-                        );
+                        let content = cache
+                            ? await cache.get(
+                                  filePath,
+                                  statSync(filePath).mtimeMs,
+                                  true
+                              )
+                            : null;
                         if (!content) {
                             const md = readFile(subdir, file).trim();
                             content = await htmlPreProcess(
@@ -141,7 +143,9 @@ const getStructure = async (
                                 },
                                 plugins
                             );
-                            await cache.put(filePath, content);
+                            if (cache) {
+                                await cache.put(filePath, content);
+                            }
                         }
                         section.chapters.push({
                             anchor: content.data.anchor,

@@ -2,7 +2,7 @@ import { htmlAst } from '../../util/html-ast.js';
 
 export default () =>
     async (p, { data: { templates, l10n } }) => {
-        if (p.tagName == 'p' && p.children && p.children.length == 1) {
+        if (p.children && p.children.length == 1) {
             const node = p.children[0];
             if (
                 node.tagName == 'a' &&

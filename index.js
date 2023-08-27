@@ -8,7 +8,9 @@ import { Cache } from './src/cache.js';
 export { default as plugins } from './src/plugins/index.js';
 
 export const init = async (options) => {
-    const cache = new Cache(options.tmpDir || resolve('.tmp/'));
+    const cache = options.noCache
+        ? null
+        : new Cache(options.tmpDir || resolve('.tmp/'));
     const { structure, html, templates } = await structurePrepare(
         options,
         cache

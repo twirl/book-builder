@@ -15,6 +15,7 @@ const templates = {
     ) => {
         return `<!doctype html><html lang="${l10n.locale}"><head>
             <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
             <title>${l10n.author}. ${l10n.title}</title>
             <meta name="author" content="${l10n.author}"/>
             <meta name="description" content="${l10n.description}"/>
@@ -156,7 +157,7 @@ const templates = {
             .join('\n')}</ul>`;
     },
 
-    referenceText: (ref, l10n) => {
+    referenceText: (ref, l10n, templates) => {
         const text =
             ref.text ||
             `${templates.joinReferenceParts(
@@ -164,14 +165,31 @@ const templates = {
                 ref.extra || []
             )}${templates.referencePage(ref, l10n)}`;
         const href = ref.href
-            ? `<a target="_blank" class="external${
-                  text ? '' : ' text'
-              }" href="${escapeHtml(ref.href)}">${escapeHtml(ref.href)}</a>`
+            ? templates.referenceHref(ref.href, text, l10n, templates)
             : '';
         return `${templates.referenceBackLink(ref, l10n)}<span>${text.trim()}${
             href && text ? '<br/>' : ''
         }${href}</span>`;
     },
+
+    referenceHref: (href, text, l10n, templates) => {
+        const scheme = href.split(':')[0] ?? 'https';
+        switch (scheme) {
+            case 'http':
+            case 'https':
+                return templates.referenceHttpHref(href, text, l10n);
+            case 'isbn':
+                return templates.referenceIsbnHref(href, text, l10n);
+        }
+    },
+
+    referenceHttpHref: (href, text) =>
+        `<a target="_blank" class="external${
+            text ? '' : ' text'
+        }" href="${escapeHtml(href)}">${escapeHtml(href)}</a>`,
+
+    referenceIsbnHref: (href, text, l10n) =>
+        `${l10n.isbn} ${escapeHtml(href.replace('isbn:', ''))}`,
 
     referenceSourceIbid: (ref, source, l10n, samePage = false) =>
         `${templates.referenceBackLink(ref, l10n)}<span>${l10n.ibid}${
@@ -253,9 +271,8 @@ const templates = {
         }</h6></div>`;
     },
 
-    mermaid: ({ svg }) => {
-        return `<div class="mermaid-svg">${svg}</div>`;
-    }
+    code: (code, language) =>
+        `<pre><code class="language-${language}">${code}</code></pre>`
 };
 
 export default templates;
