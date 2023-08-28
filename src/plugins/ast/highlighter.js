@@ -3,6 +3,11 @@ import { htmlAst } from '../../util/html-ast.js';
 
 export default (options) => {
     const languages = options?.languages || [];
+    for (const [name, callback] of Object.entries(
+        options.languageDefinitions ?? {}
+    )) {
+        highlight.registerLanguage(name.toLocaleLowerCase(), callback);
+    }
     return () => {
         const extractCode = (node) => {
             if (node.tagName != 'pre' || node.children.length != 1) {
