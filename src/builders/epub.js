@@ -18,7 +18,10 @@ export default async ({
         title: l10n.title,
         author: l10n.author,
         publisher: l10n.publisher,
-        css: readFileSync(resolve(basePath, 'css/epub.css')),
+        css:
+            readFileSync(resolve(basePath, 'css/style.css'), 'utf-8') +
+            '\n' +
+            readFileSync(resolve(basePath, 'css/epub.css'), 'utf-8'),
         tocTitle: l10n.toc,
         appendChapterTitles: false,
         content: structure.sections.reduce(

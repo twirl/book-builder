@@ -48,7 +48,8 @@ export default (options) => {
                         /\<span[^\>]*\>\/\*\s*&lt;\/em&gt;\s*\*\/\<\/span\>/g,
                         '</em>'
                     );
-                return htmlAst(templates.code(html, code.language));
+                return (await htmlAst(templates.code(html, code.language)))
+                    .children[0];
             }
         };
     };
