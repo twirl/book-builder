@@ -35,7 +35,8 @@ export default async function ({ out, html, htmlSourceValidator }) {
     await page.pdf({
         path: out,
         preferCSSPageSize: true,
-        printBackground: true
+        printBackground: true,
+        timeout: 0
     });
 
     await browser.close();
