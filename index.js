@@ -29,9 +29,11 @@ class BookBuilder {
         this.options = options;
     }
 
-    async build(target, out) {
+    async build(target, out, parameters) {
         const html = await htmlPrepare(target, {
             content: this.content,
+            css: parameters.css,
+            extraCss: parameters.extraCss,
             options: this.options,
             structure: this.structure
         });
@@ -42,6 +44,9 @@ class BookBuilder {
             cover: this.options.cover,
             lang: this.options.lang,
             l10n: this.options.l10n,
+            sample: this.options.sample,
+            css: parameters.css,
+            templates: this.options.templates,
             basePath: this.options.basePath,
             htmlSourceValidator: this.options.pipeline.htmlSourceValidator,
             out

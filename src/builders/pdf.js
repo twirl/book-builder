@@ -1,7 +1,13 @@
 import puppeteer from 'puppeteer';
 import htmlValidator from 'html-validator';
 
-export default async function ({ out, html, htmlSourceValidator }) {
+export default async function ({
+    out,
+    html,
+    htmlSourceValidator,
+    templates,
+    l10n
+}) {
     if (htmlSourceValidator) {
         try {
             const result = await htmlValidator({
@@ -24,7 +30,7 @@ export default async function ({ out, html, htmlSourceValidator }) {
     }
 
     const browser = await puppeteer.launch({
-        headless: true,
+        headless: 'new',
         product: 'chrome'
     });
     const page = await browser.newPage();
@@ -32,11 +38,22 @@ export default async function ({ out, html, htmlSourceValidator }) {
     await page.setContent(html, {
         waitUntil: 'networkidle0'
     });
+
+    const headerTemplate = templates.headerTemplate
+        ? templates.headerTemplate(l10n)
+        : '<div></div>';
+    const footerTemplate = templates.footerTemplate
+        ? templates.footerTemplate(l10n)
+        : '<div></div>';
+
     await page.pdf({
         path: out,
         preferCSSPageSize: true,
         printBackground: true,
-        timeout: 0
+        timeout: 0,
+        displayHeaderFooter: true,
+        headerTemplate,
+        footerTemplate
     });
 
     await browser.close();

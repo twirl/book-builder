@@ -8,7 +8,7 @@ import { toc } from './toc.js';
 import { references } from './references.js';
 
 export const structurePrepare = async (
-    { path, basePath, l10n, templates = {}, pipeline, chapters },
+    { path, basePath, l10n, templates = {}, pipeline, chapters, sample },
     cache
 ) => {
     templates = {
@@ -33,7 +33,8 @@ export const structurePrepare = async (
             pageBreak,
             pipeline,
             begin,
-            end
+            end,
+            sample
         },
         cache
     );
@@ -79,7 +80,7 @@ export const structurePrepare = async (
 };
 
 const getStructure = async (
-    { path, basePath, l10n, pageBreak, templates, pipeline, begin, end },
+    { path, basePath, l10n, templates, pipeline, begin, end, sample },
     cache
 ) => {
     const plugins = (pipeline && pipeline.ast && pipeline.ast.preProcess) || [];
@@ -90,9 +91,9 @@ const getStructure = async (
         characters: 0
     };
     const structure = {
-        frontPage: templates.frontPage
-            ? templates.frontPage({ templates, l10n })
-            : readFile(path, 'intro.html') + pageBreak,
+        frontPage: sample
+            ? templates.samplePage({ templates, l10n })
+            : templates.frontPage({ templates, l10n }),
         sections: [],
         references: []
     };

@@ -1,5 +1,3 @@
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
 import htmlValidator from 'html-validator';
 import Epub from 'epub-gen';
 
@@ -10,26 +8,26 @@ export default async ({
     cover,
     l10n,
     structure,
-    basePath,
     out,
+    css,
+    sample,
     htmlSourceValidator
 }) => {
     const epubData = {
         title: l10n.title,
         author: l10n.author,
         publisher: l10n.publisher,
-        css:
-            readFileSync(resolve(basePath, 'css/style.css'), 'utf-8') +
-            '\n' +
-            readFileSync(resolve(basePath, 'css/epub.css'), 'utf-8'),
+        css: css.join('\n\n'),
         tocTitle: l10n.toc,
         appendChapterTitles: false,
         content: structure.sections.reduce(
             (content, section) => {
-                content.push({
-                    title: section.title.toUpperCase(),
-                    data: `<h2>${section.title}</h2>`
-                });
+                if (!sample) {
+                    content.push({
+                        title: section.title.toUpperCase(),
+                        data: `<h2>${section.title}</h2>`
+                    });
+                }
                 (section.chapters || [section]).forEach((chapter) => {
                     content.push({
                         title: chapter.title,
@@ -122,8 +120,10 @@ export function fixLinks(str) {
             href = `href="${references.BIBLIOGRAPHY_ANCHOR}.xhtml#${href}"`;
         } else if (href.match(/chapter-\d+-paragraph-\d+/)) {
             href = '';
+        } else if (href.startsWith('ref-chapter-')) {
+            href = `href="#${href}"`;
         } else {
-            href = `href="${href}.xhtml#${href}"`;
+            href = `href="${href}.xhtml"`;
         }
         result.push(href);
         pos = match.index + match[0].length;

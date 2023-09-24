@@ -2,15 +2,19 @@ import { cssPrepare } from './css-prepare.js';
 import { htmlPostProcess } from './processors/html-post-process.js';
 import { resolveSrc } from './util/resolve-src.js';
 
-export const htmlPrepare = async (target, { content, options, structure }) => {
+export const htmlPrepare = async (
+    target,
+    { content, options, structure, css: rawCss, extraCss }
+) => {
     const { templates, pipeline } = options;
     if (target == 'epub') {
         return '';
     } else {
         const css = await cssPrepare(
-            target,
+            rawCss,
             options,
-            (pipeline && pipeline.css) || {}
+            (pipeline && pipeline.css) || {},
+            extraCss
         );
         return htmlPostProcess(
             templates[target == 'html' ? 'screenHtml' : 'printHtml'](
