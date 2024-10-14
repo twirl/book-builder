@@ -3,9 +3,12 @@
     "version": "1.0.0",
     "license": "MIT",
     "dependencies": {
+        "rehype-parse": "^9.0.1",
+        "rehype-stringify": "^10.0.1",
         "remark-gfm": "^4.0.0",
         "remark-parse": "^11.0.0",
         "remark-rehype": "^11.1.1",
+        "striptags": "^3.2.0",
         "unified": "^11.0.5",
         "unorm": "^1.6.0"
     },
@@ -14,9 +17,11 @@
         "@types/hast": "^3.0.4",
         "@types/node": "^22.5.0",
         "@types/unist": "^3.0.3",
-        "@types/unorm": "^1.3.31"
+        "@types/unorm": "^1.3.31",
+        "expect": "^29.7.0",
+        "globby": "^14.0.2"
     },
     "scripts": {
-        "test": "tsx --test test/markdownAst.test.ts"
+        "test": "tsx test/run-tests.ts"
     }
 }

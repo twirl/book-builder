@@ -1,42 +1,57 @@
-import { Context } from '../models/Context';
-import { Logger } from '../models/Logger';
-import { Options } from '../models/Options';
-import { Source } from '../models/Source';
-import { Templates } from '../models/Templates';
+import { Section } from './Section';
 
 export class Structure {
-    private cursor = {
-        sections: 0,
-        references: 0,
-        words: 0,
-        characters: 0
-    };
     private sections: Section[] = [];
-    constructor(
-        private readonly templates: Templates,
-        private readonly context: Context
-    ) {}
-}
-
-export class Section {
-    private chapters: Chapter = [];
-    constructor() {}
-}
-
-export class Chapter {
     constructor() {}
 
-    public static async createFromMarkdown(
-        md: string,
-        templates: Templates,
-        context: Context,
-        cursor: Cursor
-    ) {
-        const {ast, cursor} = await markdownPreProcess(md);
-        return new Chapter(ast);
+    public appendSection(section: Section) {
+        this.sections.push(section);
+    }
+}
+
+export async function getStructure(
+    source: Source,
+    context: Context,
+    templates: Templates
+) {
+    const structure = {
+        sections: []
+    };
+    const counters = new Counters();
+    // const plugins = (pipeline && pipeline.ast && pipeline.ast.preProcess) || [];
+    const sectionParameters = await getSectionParametersFromSource(
+        source,
+        context,
+        templates
+    );
+
+    for (const parameters of sectionParameters) {
+        structure.sections.push(
+            await getSectionWithChaptersFromParameters(
+                parameters,
+                counters,
+                templates,
+                context
+            )
+        );
     }
 
-    public static
+    await readdirSync(path)
+        .filter((p) => statSync(resolve(path, p)).isDirectory())
+        .sort()
+        .reduce(async (p, dir, index) => {
+            const structure = await p;
+            const name = dir.replace(/^[^\-]*-/, '');
+            const subdir = resolve(path, dir);
+            const section = {
+                title: name,
+                anchor: `section-${index + 1}`,
+                filename: `section-${index + 1}.xhtml`,
+                chapters: []
+            };
+
+            
+    return structure;
 }
 
 export interface Cursor {
@@ -44,4 +59,20 @@ export interface Cursor {
     chapter: number;
     references: number;
     words: number;
+}
+
+public static async createFromMarkdown(
+    filename: string,
+    templates: Templates,
+    context: Context,
+    cursor: Cursor,
+    plugins: AstPlugin[]
+) {
+    const md = await readFile(filename, 'utf-8');
+    const anchor = filename
+        .toLowerCase()
+        .replace(/^\d+\-/, '')
+        .replace(/\.\w+$/, '');
+    const ast = await markdownToAst(md);
+    return new Chapter(ast, anchor, ++cursor.chapter);
 }

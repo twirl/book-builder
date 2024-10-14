@@ -9,4 +9,12 @@ export class Counters {
     public getChapterCountIncrement() {
         return ++this.chapters;
     }
+
+    public getChapterCount() {
+        return this.chapters;
+    }
+
+    public getSectionCountIncrement() {
+        return ++this.sections;
+    }
 }
