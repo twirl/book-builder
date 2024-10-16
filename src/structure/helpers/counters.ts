@@ -1,12 +1,10 @@
 export class Counters {
     private sections = 0;
     private chapters = 0;
-    private words = 0;
-    private charactes = 0;
 
     constructor() {}
 
-    public getChapterCountIncrement() {
+    public getChapterCountIncremented() {
         return ++this.chapters;
     }
 
@@ -14,7 +12,7 @@ export class Counters {
         return this.chapters;
     }
 
-    public getSectionCountIncrement() {
+    public getSectionCountIncremented() {
         return ++this.sections;
     }
 }

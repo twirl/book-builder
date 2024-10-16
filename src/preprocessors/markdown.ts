@@ -5,7 +5,7 @@ import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 
-import { AstPlugin } from '../models/plugins/AstPlugin';
+import { AstPlugin } from '../models/AstPlugin';
 import { applyPluginToAst } from '../util/applyAstPlugin';
 
 export const preprocessMarkdown = async <T>(

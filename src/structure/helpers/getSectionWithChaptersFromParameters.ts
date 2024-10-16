@@ -2,17 +2,22 @@ import { readdir, stat as fsStat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { Context } from '../../models/Context';
+import { L10n } from '../../models/L10n';
+import { ChapterAstPlugin } from '../../models/plugins/ChapterAstPlugin';
+import { Strings } from '../../models/Strings';
 import { Templates } from '../../models/Templates';
-import { Section } from '../Section';
+import { Section } from '../Structure';
+import { buildChapterFromSource } from './buildChapterFromSource';
 import { Counters } from './Counters';
 import { SectionParameters } from './getSectionParametersFromSource';
 
-export async function getSectionWithChaptersFromParameters(
+export const getSectionWithChaptersFromParameters = async <T, S>(
     parameters: SectionParameters,
     counters: Counters,
     context: Context,
-    templates: Templates
-) {
+    l10n: L10n<T, S>,
+    chapterAstPlugins: ChapterAstPlugin<T, S>[]
+) => {
     const files = [];
     for (const file of await readdir(parameters.path)) {
         const path = resolve(parameters.path, file);
@@ -25,22 +30,23 @@ export async function getSectionWithChaptersFromParameters(
     const section = new Section(
         parameters.title,
         parameters.anchor,
-        counters.getSectionCountIncrement()
+        counters.getSectionCountIncremented()
     );
     for (const { path, stat } of files.sort()) {
-        const chapterCounter = counters.getChapterCountIncrement();
+        const chapterCounter = counters.getChapterCountIncremented();
         const range = context.options.chapterRange;
         if (
             range === undefined ||
             (chapterCounter >= range[0] && chapterCounter <= range[1])
         ) {
             section.appendChapter(
-                await buildSectionFromMd(
+                await buildChapterFromSource(
                     path,
                     stat,
                     counters,
+                    l10n,
                     context,
-                    templates
+                    chapterAstPlugins
                 )
             );
         }
@@ -59,4 +65,4 @@ export async function getSectionWithChaptersFromParameters(
     } else {
         return section;
     }
-}
+};

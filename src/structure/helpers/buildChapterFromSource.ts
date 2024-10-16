@@ -1,43 +1,56 @@
-import { readFile } from 'node:fs/promises';
+import { Stats } from 'node:fs';
 
 import { Chapter } from '../../models/Chapter';
 import { Context } from '../../models/Context';
-import { ChapterAstPlugin, ChapterState } from '../../models/plugins/AstPlugin';
-import { Templates } from '../../models/Templates';
+import { L10n } from '../../models/L10n';
+import {
+    ChapterAstPlugin,
+    ChapterState
+} from '../../models/plugins/ChapterAstPlugin';
 import { markdownToAst } from '../../preprocessors/markdown';
 import { applyPluginToAst } from '../../util/applyAstPlugin';
+import { readUtf8File } from '../../util/readFile';
 import { Counters } from './Counters';
 
-export const buildChapterFromSource = async (
+export const buildChapterFromSource = async <T, S>(
     path: string,
+    fileStat: Stats,
     counters: Counters,
-    templates: Templates,
+    l10n: L10n<T, S>,
     context: Context,
-    plugins: ChapterAstPlugin[]
+    plugins: ChapterAstPlugin<T, S>[]
 ): Promise<Chapter> => {
-    const md = await readFile(path, 'utf-8');
-    const ast = await markdownToAst(md);
-    const counter = counters.getChapterCount();
-
-    const state: ChapterState = {
-        counter: counter,
-        title: templates.chapterTitle(
-            path,
-            counters.getChapterCount(),
-            context
-        ),
+    return context.cache.getCachedJsonOrPutToCache<Chapter>(
         path,
-        anchor: templates.chapterAnchor(path, counter, context)
-    };
+        fileStat.mtimeMs,
+        async () => {
+            const md = await readUtf8File(path);
+            const ast = await markdownToAst(md);
+            const counter = counters.getChapterCount();
 
-    for (const plugin of plugins) {
-        await applyPluginToAst(ast, plugin, state);
-    }
+            const state: ChapterState<T, S> = {
+                counter: counter,
+                title: l10n.templates.chapterTitle(
+                    path,
+                    counters.getChapterCount(),
+                    context
+                ),
+                path,
+                anchor: l10n.templates.chapterAnchor(path, counter, context),
+                context,
+                l10n
+            };
 
-    return {
-        title: state.title,
-        counter: state.counter,
-        anchor: state.anchor,
-        ast
-    };
+            for (const plugin of plugins) {
+                await applyPluginToAst(ast, plugin, state);
+            }
+
+            return {
+                title: state.title,
+                counter: state.counter,
+                anchor: state.anchor,
+                ast
+            };
+        }
+    );
 };

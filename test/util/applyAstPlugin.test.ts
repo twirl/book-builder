@@ -3,36 +3,27 @@ import { describe, it } from 'node:test';
 import { expect } from 'expect';
 import { Element, Text } from 'hast';
 
-import { Action, AstPlugin } from '../../src/models/plugins/AstPlugin';
+import { Action, AstPlugin } from '../../src/models/AstPlugin';
 import { markdownToAst } from '../../src/preprocessors/markdown';
 import {
     applyPluginToAst,
     replaceFromHtml
 } from '../../src/util/applyAstPlugin';
 import { astToHtml } from '../../src/util/astToHtml';
-
-const makeStatelessPlugin = <T>(
-    runner: (input: Element) => Promise<Action>
-): AstPlugin<T> => {
-    return {
-        init: async () => {},
-        run: (input: Element) => runner(input),
-        finish: async () => {}
-    };
-};
+import { createStatelessPlugin } from '../../src/util/statelessPlugin';
 
 describe('Plugins', () => {
     it('Transforms markdown: alter node and continues nested', async () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyPluginToAst(
             ast,
-            makeStatelessPlugin(async (element) => {
+            createStatelessPlugin<void>(async (element) => {
                 if (element.tagName === 'strong') {
                     (element.children[0] as Text).value = 'indeed';
                 }
                 return { action: 'continue_nested' };
             }),
-            null
+            undefined
         );
         expect(await astToHtml(ast)).toEqual(
             '<p><strong>indeed</strong> <a href="/link2">ref <strong>indeed</strong></a></p>'
@@ -46,6 +37,7 @@ describe('Plugins', () => {
             private counter = 0;
             public async init(state: { counter: number }) {
                 this.counter = state.counter;
+                return this;
             }
             public async run(input: Element): Promise<Action> {
                 this.counter++;
@@ -63,7 +55,7 @@ describe('Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyPluginToAst(
             ast,
-            makeStatelessPlugin(async (element) => {
+            createStatelessPlugin(async (element) => {
                 if (element.properties.href === '/link2') {
                     element.properties.href = '/link3';
                     return { action: 'continue' };
@@ -84,7 +76,7 @@ describe('Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyPluginToAst(
             ast,
-            makeStatelessPlugin(async (element) => {
+            createStatelessPlugin(async (element) => {
                 if (element.tagName === 'strong') {
                     return { action: 'replace', newValue: [] };
                 }
@@ -101,7 +93,7 @@ describe('Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyPluginToAst(
             ast,
-            makeStatelessPlugin(async (element: Element) => {
+            createStatelessPlugin(async (element: Element) => {
                 if (element.tagName === 'a') {
                     return replaceFromHtml('<strong>strong</strong>');
                 }

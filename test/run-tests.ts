@@ -12,7 +12,11 @@ async function runTests() {
         });
 
         child.on('close', (code) => {
-            resolve(code);
+            if (code === 0) {
+                resolve(code);
+            } else {
+                reject(new Error(`Test run finished with code ${code}`));
+            }
         });
 
         child.on('error', (error) => {

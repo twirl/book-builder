@@ -1,15 +1,12 @@
-import { Builder, initBuilder } from "../../models/Builder";
+import { Builder, BuilderState } from '../../models/Builder';
 
-export class HtmlBuilder implements Builder {
-  constructor() {
-    const structure = {
-      frontPage: options.sample
-        ? templates.samplePage({ templates, l10n })
-        : templates.frontPage({ templates, l10n }),
-      sections: [],
-      references: [],
-    };
-  }
+export type HtmlBuilder<T, S> = Builder<T, S, HtmlBuilderOptions>;
+
+export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
+    state: BuilderState<T, S>,
+    options: HtmlBuilderOptions
+) => {};
+
+export interface HtmlBuilderOptions {
+    outFile: string;
 }
-
-export const initHtmlBuilder: initBuilder = () => new HtmlBuilder();

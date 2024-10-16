@@ -3,10 +3,11 @@ import { describe, it } from 'node:test';
 import expect from 'expect';
 
 import { Context } from '../../src/models/Context';
-import { ChapterState } from '../../src/models/plugins/AstPlugin';
+import { L10n } from '../../src/models/L10n';
+import { ChapterState } from '../../src/models/plugins/ChapterAstPlugin';
+import { Strings } from '../../src/models/Strings';
 import { Templates } from '../../src/models/Templates';
-import { H3TitlePlugin } from '../../src/plugins/chapterAst/h3Title';
-import { htmlToAst } from '../../src/preprocessors/html';
+import { h3Title } from '../../src/plugins/chapterAst/h3Title';
 import { markdownToAst } from '../../src/preprocessors/markdown';
 import { applyPluginToAst } from '../../src/util/applyAstPlugin';
 
@@ -51,11 +52,19 @@ describe('H3 to title', () => {
         }
     }).forEach(([testCase, { md, state, expected }]) => {
         it(testCase, async () => {
-            const plugin = new H3TitlePlugin(templates, context);
+            const l10n: L10n<{}, {}> = {
+                templates,
+                strings: {} as any as Strings
+            };
+            const plugin = h3Title<{}, {}>(l10n, context);
 
             const ast = await markdownToAst(md);
 
-            await applyPluginToAst(ast, plugin, state as any as ChapterState);
+            await applyPluginToAst(
+                ast,
+                plugin,
+                state as any as ChapterState<{}, {}>
+            );
 
             expect(state).toEqual(expected);
         });

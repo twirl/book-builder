@@ -2,14 +2,16 @@ import { readdir, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { Context } from '../../models/Context';
+import { L10n } from '../../models/L10n';
 import { Source } from '../../models/Source';
+import { Strings } from '../../models/Strings';
 import { Templates } from '../../models/Templates';
 
-export async function getSectionParametersFromSource(
+export const getSectionParametersFromSource = async <T, S>(
     source: Source,
     context: Context,
-    templates: Templates
-) {
+    l10n: L10n<T, S>
+) => {
     const sectionDirs = [];
     for (const path of await readdir(source.dir)) {
         const fullPath = resolve(source.dir, path);
@@ -24,10 +26,10 @@ export async function getSectionParametersFromSource(
         .sort((a, b) => (a.path < b.path ? -1 : 1))
         .map(({ path, fullPath }, index) => ({
             path: fullPath,
-            title: templates.sectionTitle(path, index, context),
-            anchor: templates.sectionAnchor(path, index, context)
+            title: l10n.templates.sectionTitle(path, index, context),
+            anchor: l10n.templates.sectionAnchor(path, index, context)
         }));
-}
+};
 
 export interface SectionParameters {
     path: string;

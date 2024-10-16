@@ -22,44 +22,46 @@ export class Cache {
         }
     }
 
-    public async get(
-        path: string,
+    public async getCachedOrPutToCache(
+        key: string,
         dateMs: number,
-        transform: (b: Buffer) => Promise<string>
-    ): Promise<string> {
-        const cachedContent = await this.tryGet(path, dateMs);
+        fallback: () => Promise<Buffer>
+    ): Promise<Buffer> {
+        const cachedContent = await this.tryGet(key, dateMs);
         if (cachedContent !== null) {
-            return cachedContent.toString('utf-8');
+            return cachedContent;
         } else {
-            const content = await transform(await readFile(path));
-            await this.put(this.pathToCachedFile(path), content);
+            const content = await fallback();
+            await this.put(this.keyToCachedFile(key), content);
             return content;
         }
     }
 
-    public async getJson<T>(
-        path: string,
+    public async getCachedJsonOrPutToCache<T>(
+        key: string,
         dateMs: number,
-        transform: <I>(b: I) => Promise<T>
+        fallback: () => Promise<T>
     ): Promise<T> {
-        const cachedContent = await this.tryGetJson<T>(path, dateMs);
+        const cachedContent = await this.tryGetJson<T>(key, dateMs);
         if (cachedContent !== null) {
             return cachedContent;
         } else {
-            const content = await readFile(path);
-            const json = await transform(JSON.parse(content.toString('utf-8')));
-            await this.put(this.pathToCachedFile(path), content);
+            const json = await fallback();
+            await this.put(
+                this.keyToCachedFile(key),
+                Buffer.from(JSON.stringify(json, null, 4))
+            );
             return json;
         }
     }
 
-    private async tryGet(path: string, dateMs: number): Promise<Buffer | null> {
+    private async tryGet(key: string, dateMs: number): Promise<Buffer | null> {
         if (this.disabled) {
             return null;
         }
         try {
-            const fileName = this.pathToCachedFile(path);
-            if ((await stat(fileName)).mtimeMs >= dateMs) {
+            const fileName = this.keyToCachedFile(key);
+            if ((await stat(fileName)).mtimeMs > dateMs) {
                 const content = await readFile(fileName);
                 return content;
             } else {
@@ -81,7 +83,7 @@ export class Cache {
         } else {
             try {
                 const json = JSON.parse(content.toString('utf-8'));
-                return json;
+                return json as T;
             } catch (e) {
                 this.logger.error(e);
                 return null;
@@ -89,10 +91,10 @@ export class Cache {
         }
     }
 
-    private async put(path: string, data: any) {
+    private async put(key: string, data: any) {
         if (!this.disabled) {
             try {
-                const fileName = this.pathToCachedFile(path);
+                const fileName = this.keyToCachedFile(key);
                 await writeFile(fileName, Cache.toBuffer(data));
             } catch (e) {
                 console.error(e);
@@ -100,12 +102,12 @@ export class Cache {
         }
     }
 
-    private pathToCachedFile(path: string) {
-        return resolve(this.dir, Cache.pathToFileName(path));
+    private keyToCachedFile(key: string) {
+        return resolve(this.dir, Cache.keyToFileName(key));
     }
 
-    private static pathToFileName(path: string) {
-        return path.replace(/[^\w\d-_]/g, '_');
+    private static keyToFileName(key: string) {
+        return key.replace(/[\W]/g, '_');
     }
 
     private static toBuffer(data: any): Buffer {

@@ -1,91 +1,68 @@
 import { resolve } from 'node:path';
 
 import { Cache } from './Cache';
+import { Context } from './models/Context';
+import { L10n } from './models/L10n';
 import { Logger, LogLevel } from './models/Logger';
 import { Options } from './models/Options';
+import { ChapterAstPlugin } from './models/plugins/ChapterAstPlugin';
 import { Source } from './models/Source';
+import { Strings } from './models/Strings';
 import { Templates } from './models/Templates';
-import { prepareStructure } from './structure/prepare';
+import { getStructure, Structure } from './structure/Structure';
 import { DEFAULT_TEMPLATES } from './templates/defaultTemplates';
 
-// import builders from './src/builders/index.js';
-// import { structurePrepare } from './src/structure-prepare.js';
-// import { htmlPrepare } from './src/html-prepare.js';
-// import { Cache } from './src/cache.js';
-
-// export { default as plugins } from './src/plugins/index.js';
-
-export class BookBuilder<T extends Templates> {
+export class BookBuilder<T, S> {
     constructor(
-        private readonly options: Options,
-        private readonly cache?: Cache
+        private readonly structure: Structure,
+        private readonly context: Context,
+        private readonly l10n: L10n<T, S>,
+        private readonly pipeline?: Pipeline<T, S>
     ) {
         console.log('It works');
     }
-
-    // async build(target, out, parameters) {
-    //     const html = await htmlPrepare(target, {
-    //         content: this.content,
-    //         css: parameters.css,
-    //         extraCss: parameters.extraCss,
-    //         options: this.options,
-    //         structure: this.structure
-    //     });
-
-    //     const {
-    //         cover,
-    //         lang,
-    //         l10n,
-    //         sample,
-    //         templates,
-    //         basePath,
-    //         hoistSingleChapters
-    //     } = this.options;
-
-    //     return builders[target]({
-    //         structure: this.structure,
-    //         html,
-    //         cover,
-    //         lang,
-    //         l10n,
-    //         sample,
-    //         hoistSingleChapters,
-    //         css: parameters.css,
-    //         templates,
-    //         basePath,
-    //         htmlSourceValidator: this.options.pipeline.htmlSourceValidator,
-    //         out
-    //     });
-    // }
 }
-export async function init(parameters: Parameters) {
+
+export async function init<T, S>(parameters: Parameters<T, S>) {
     const options: Options = {
         ...DEFAULT_OPTIONS,
         ...(parameters.options || {})
     };
     const logger = parameters.logger ?? new ConsoleLogger(options);
-    const templates: Templates = {
-        ...DEFAULT_TEMPLATES,
-        ...parameters.templates
-    };
     const cache = new Cache(resolve(options.tmpDir), logger, options.noCache);
+    const context: Context = { logger, cache, options };
 
-    const structure = await prepareStructure(
+    const l10n: L10n<T, S> = {
+        strings: parameters.l10n.strings,
+        templates: {
+            ...DEFAULT_TEMPLATES,
+            ...parameters.l10n.templates
+        }
+    };
+
+    const structure = await getStructure(
         parameters.source,
-        templates,
-        options,
-        cache,
-        logger
+        context,
+        l10n,
+        parameters.pipeline?.chapterAstPlugins ?? []
     );
 
-    return new BookBuilder(options, cache);
+    return new BookBuilder(structure, context, l10n, parameters.pipeline);
 }
 
-export interface Parameters {
+export interface Parameters<T, S> {
     source: Source;
-    templates: Partial<Templates>;
+    l10n: {
+        strings: S & Strings;
+        templates: T & Partial<Templates>;
+    };
     options: Partial<Options>;
+    pipeline?: Pipeline<T, S>;
     logger?: Logger;
+}
+
+export interface Pipeline<T, S> {
+    chapterAstPlugins: ChapterAstPlugin<T, S>[];
 }
 
 export const DEFAULT_OPTIONS: Options = {

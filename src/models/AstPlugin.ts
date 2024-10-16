@@ -1,7 +1,10 @@
 import { Element, ElementContent } from 'hast';
 
 export interface AstPlugin<State> {
-    init: (state: State) => Promise<void>;
+    init: (state: State) => Promise<AstPluginRunner<State>>;
+}
+
+export interface AstPluginRunner<State> {
     run: (input: Element) => Promise<Action>;
     finish: (state: State) => Promise<void>;
 }
@@ -22,12 +25,3 @@ export interface ReplaceAction {
 }
 
 export type PluginState = Record<string, any>;
-
-export interface ChapterState {
-    counter: number;
-    title: string;
-    anchor: string;
-    path: string;
-}
-
-export type ChapterAstPlugin = AstPlugin<ChapterState>;
