@@ -10,31 +10,29 @@ import {
 } from '../../models/plugins/ChapterAstPlugin';
 import { astNodeToHtml } from '../../util/astToHtml';
 
-export const h3Title = <T, S>(l10n: L10n<T, S>, context: Context) =>
-    new H3TitlePlugin(l10n, context);
+export const h3Title = () => new H3TitlePlugin();
 
 export class H3TitlePlugin<T, S> implements ChapterAstPlugin<T, S> {
     private readonly h3Contents: string[] = [];
-    constructor(
-        private readonly l10n: L10n<T, S>,
-        private readonly context: Context
-    ) {}
+
+    constructor() {}
+
     public async init() {
         return this;
     }
+
     public async run(node: Element): Promise<Action> {
         if (node.tagName === 'h3') {
             this.h3Contents.push(striptags(await astNodeToHtml(node)));
-            return { action: 'continue' };
+            return this.h3Contents.length === 1
+                ? { action: 'replace', newValue: [] }
+                : { action: 'continue' };
         }
         return { action: 'continue_nested' };
     }
     public async finish(state: ChapterState<T, S>) {
         if (this.h3Contents.length) {
-            state.title = this.l10n.templates.chapterTitle(
-                state.path,
-                state.counter,
-                this.context,
+            state.chapter.title = state.l10n.templates.jointHeaders(
                 this.h3Contents
             );
         }

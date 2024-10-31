@@ -1,14 +1,14 @@
+import { Section } from '../../structure/Structure';
 import { AstPlugin } from '../AstPlugin';
+import { Chapter } from '../Chapter';
 import { Context } from '../Context';
 import { L10n } from '../L10n';
 
 export interface ChapterState<T, S> {
     context: Context;
     l10n: L10n<T, S>;
-    counter: number;
-    title: string;
-    anchor: string;
-    path: string;
+    chapter: Chapter;
+    section: Section;
 }
 
 export type ChapterAstPlugin<T, S> = AstPlugin<ChapterState<T, S>>;

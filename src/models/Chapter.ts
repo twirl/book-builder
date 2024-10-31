@@ -4,5 +4,5 @@ export interface Chapter {
     title: string;
     anchor: string;
     counter: number;
-    ast: Root;
+    content: Root;
 }

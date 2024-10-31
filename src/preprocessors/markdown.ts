@@ -1,5 +1,4 @@
-import { Root, Element, RootContent, ElementContent } from 'hast';
-import rehypeStringify from 'rehype-stringify';
+import { Root } from 'hast';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';

@@ -5,6 +5,5 @@ export interface Options {
     noCache: boolean;
     logLevel: LogLevel;
     chapterRange?: [number, number];
-    hoistSingleChapters: boolean;
     sample: boolean;
 }

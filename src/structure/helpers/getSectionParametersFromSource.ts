@@ -2,15 +2,12 @@ import { readdir, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { Context } from '../../models/Context';
-import { L10n } from '../../models/L10n';
 import { Source } from '../../models/Source';
-import { Strings } from '../../models/Strings';
-import { Templates } from '../../models/Templates';
+import { getEntityName } from '../../util/getEntityName';
 
-export const getSectionParametersFromSource = async <T, S>(
+export const getSectionParametersFromSource = async (
     source: Source,
-    context: Context,
-    l10n: L10n<T, S>
+    _context: Context
 ) => {
     const sectionDirs = [];
     for (const path of await readdir(source.dir)) {
@@ -26,8 +23,8 @@ export const getSectionParametersFromSource = async <T, S>(
         .sort((a, b) => (a.path < b.path ? -1 : 1))
         .map(({ path, fullPath }, index) => ({
             path: fullPath,
-            title: l10n.templates.sectionTitle(path, index, context),
-            anchor: l10n.templates.sectionAnchor(path, index, context)
+            title: sectionTitle(path),
+            anchor: sectionAnchor(index)
         }));
 };
 
@@ -36,3 +33,7 @@ export interface SectionParameters {
     title: string;
     anchor: string;
 }
+
+export const sectionTitle = (path: string) => getEntityName(path);
+
+export const sectionAnchor = (counter: number) => `section-${counter + 1}`;

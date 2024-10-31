@@ -1,5 +1,5 @@
-import { mkdirSync, existsSync, accessSync, constants } from 'node:fs';
-import { readFile, writeFile, stat } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { access, readFile, writeFile, stat, mkdir } from 'node:fs/promises';
 
 import { resolve } from 'path';
 
@@ -7,19 +7,43 @@ import { Logger } from './models/Logger';
 
 export class Cache {
     constructor(
-        private readonly dir: string,
         private readonly logger: Logger,
+        private readonly dir: string,
         private disabled = false
-    ) {
-        if (!existsSync(dir)) {
-            mkdirSync(dir);
+    ) {}
+
+    public isEnabled() {
+        return !this.disabled;
+    }
+
+    public static async init(
+        logger: Logger,
+        dir: string,
+        disabled = false
+    ): Promise<Cache> {
+        if (!disabled) {
+            try {
+                const stats = await stat(dir);
+                if (!stats.isDirectory()) {
+                    logger.error(
+                        `"${dir}" already exists and is not a directory`
+                    );
+                    return new Cache(logger, dir, true);
+                }
+            } catch (e) {
+                try {
+                    await mkdir(dir);
+                } catch (e) {}
+            }
+
+            try {
+                await access(dir, constants.W_OK | constants.X_OK);
+            } catch (e) {
+                logger.error(`${dir} is not writeable, cache is disabled`);
+                return new Cache(logger, dir, true);
+            }
         }
-        try {
-            accessSync(dir, constants.W_OK | constants.X_OK);
-        } catch (e) {
-            console.error(`${dir} is not writeable, cache is disabled`);
-            this.disabled = true;
-        }
+        return new Cache(logger, dir, disabled);
     }
 
     public async getCachedOrPutToCache(
@@ -47,30 +71,33 @@ export class Cache {
             return cachedContent;
         } else {
             const json = await fallback();
-            await this.put(
-                this.keyToCachedFile(key),
-                Buffer.from(JSON.stringify(json, null, 4))
-            );
+            debugger;
+            await this.put(key, Buffer.from(JSON.stringify(json, null, 4)));
             return json;
         }
     }
 
     private async tryGet(key: string, dateMs: number): Promise<Buffer | null> {
         if (this.disabled) {
+            this.logger.debug('Cache is disabled', { key });
             return null;
         }
         try {
             const fileName = this.keyToCachedFile(key);
-            if ((await stat(fileName)).mtimeMs > dateMs) {
-                const content = await readFile(fileName);
-                return content;
-            } else {
-                return null;
+            const stats = await stat(fileName);
+
+            try {
+                if (stats.mtimeMs > dateMs) {
+                    const content = await readFile(fileName);
+                    return content;
+                }
+            } catch (e) {
+                this.logger.error(e);
             }
         } catch (e) {
-            this.logger.error(e);
-            return null;
+            this.logger.debug(`File not found in cache`, key);
         }
+        return null;
     }
 
     private async tryGetJson<T>(
@@ -85,7 +112,7 @@ export class Cache {
                 const json = JSON.parse(content.toString('utf-8'));
                 return json as T;
             } catch (e) {
-                this.logger.error(e);
+                this.logger.error('Cannot read data from cache', e);
                 return null;
             }
         }
@@ -97,8 +124,10 @@ export class Cache {
                 const fileName = this.keyToCachedFile(key);
                 await writeFile(fileName, Cache.toBuffer(data));
             } catch (e) {
-                console.error(e);
+                this.logger.error('Cannot write cached data', e);
             }
+        } else {
+            this.logger.debug('Cache is disabled, no data written', { key });
         }
     }
 

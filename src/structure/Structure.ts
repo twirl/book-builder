@@ -22,19 +22,16 @@ export class Structure {
     }
 }
 
-export const getStructure = async <T, S>(
+export const getStructure = async (
     source: Source,
-    context: Context,
-    l10n: L10n<T, S>,
-    chapterAstPlugins: ChapterAstPlugin<T, S>[]
+    context: Context
 ): Promise<Structure> => {
     const structure = new Structure();
     const counters = new Counters();
 
     const sectionParameters = await getSectionParametersFromSource(
         source,
-        context,
-        l10n
+        context
     );
 
     for (const parameters of sectionParameters) {
@@ -42,9 +39,7 @@ export const getStructure = async <T, S>(
             await getSectionWithChaptersFromParameters(
                 parameters,
                 counters,
-                context,
-                l10n,
-                chapterAstPlugins
+                context
             )
         );
     }
@@ -59,8 +54,16 @@ export class Section {
         public readonly title: string,
         public readonly anchor: string,
         public readonly counter: number,
-        public readonly content?: Root
+        private content?: Root
     ) {}
+
+    public getContent() {
+        return this.content;
+    }
+
+    public setContent(content: Root) {
+        this.content = content;
+    }
 
     public appendChapter(chapter: Chapter) {
         this.chapters.push(chapter);
@@ -68,5 +71,9 @@ export class Section {
 
     public getChapters() {
         return this.chapters;
+    }
+
+    public removeAllChapters() {
+        this.chapters = [];
     }
 }

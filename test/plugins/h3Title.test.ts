@@ -25,7 +25,7 @@ describe('H3 to title', () => {
     Object.entries({
         'Should leave title as is if there is no h3 tags in the source': {
             md: `#### This is not h3\n\nAnd this is not a **title**`,
-            state: {
+            chapter: {
                 title: 'Original Title'
             },
             expected: {
@@ -34,7 +34,7 @@ describe('H3 to title', () => {
         },
         'Should convert a single h3 into a title': {
             md: `### This **is** [h3](#link)\n\nAnd this is not a **title**`,
-            state: {
+            chapter: {
                 title: 'Original Title'
             },
             expected: {
@@ -43,30 +43,32 @@ describe('H3 to title', () => {
         },
         'Should merge all h3 tags found': {
             md: `### This **is** [h3](#link)\n\nAnd this is not a **title**\n\n### And this is again`,
-            state: {
+            chapter: {
                 title: 'Original Title'
             },
             expected: {
                 title: 'This is h3-And this is again'
             }
         }
-    }).forEach(([testCase, { md, state, expected }]) => {
+    }).forEach(([testCase, { md, chapter, expected }]) => {
         it(testCase, async () => {
             const l10n: L10n<{}, {}> = {
                 templates,
-                strings: {} as any as Strings
+                strings: {} as any as Strings,
+                language: 'en',
+                locale: 'en-US'
             };
-            const plugin = h3Title<{}, {}>(l10n, context);
+            const plugin = h3Title();
 
             const ast = await markdownToAst(md);
+            const state = {
+                chapter,
+                l10n,
+                context
+            } as any as ChapterState<{}, {}>;
+            await applyPluginToAst(ast, plugin, state);
 
-            await applyPluginToAst(
-                ast,
-                plugin,
-                state as any as ChapterState<{}, {}>
-            );
-
-            expect(state).toEqual(expected);
+            expect(state.chapter).toEqual(expected);
         });
     });
 });

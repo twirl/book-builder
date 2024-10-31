@@ -2,23 +2,16 @@ import { Stats } from 'node:fs';
 
 import { Chapter } from '../../models/Chapter';
 import { Context } from '../../models/Context';
-import { L10n } from '../../models/L10n';
-import {
-    ChapterAstPlugin,
-    ChapterState
-} from '../../models/plugins/ChapterAstPlugin';
 import { markdownToAst } from '../../preprocessors/markdown';
-import { applyPluginToAst } from '../../util/applyAstPlugin';
+import { getEntityName } from '../../util/getEntityName';
 import { readUtf8File } from '../../util/readFile';
 import { Counters } from './Counters';
 
-export const buildChapterFromSource = async <T, S>(
+export const buildChapterFromSource = async (
     path: string,
     fileStat: Stats,
     counters: Counters,
-    l10n: L10n<T, S>,
-    context: Context,
-    plugins: ChapterAstPlugin<T, S>[]
+    context: Context
 ): Promise<Chapter> => {
     return context.cache.getCachedJsonOrPutToCache<Chapter>(
         path,
@@ -28,29 +21,17 @@ export const buildChapterFromSource = async <T, S>(
             const ast = await markdownToAst(md);
             const counter = counters.getChapterCount();
 
-            const state: ChapterState<T, S> = {
-                counter: counter,
-                title: l10n.templates.chapterTitle(
-                    path,
-                    counters.getChapterCount(),
-                    context
-                ),
-                path,
-                anchor: l10n.templates.chapterAnchor(path, counter, context),
-                context,
-                l10n
-            };
-
-            for (const plugin of plugins) {
-                await applyPluginToAst(ast, plugin, state);
-            }
-
             return {
-                title: state.title,
-                counter: state.counter,
-                anchor: state.anchor,
-                ast
+                content: ast,
+                title: chapterTitle(path),
+                anchor: chapterAnchor(path),
+                counter
             };
         }
     );
 };
+
+export const chapterTitle = (path: string, headers?: string[]) =>
+    headers && headers.length ? headers.join('. ') : getEntityName(path);
+
+export const chapterAnchor = (path: string) => getEntityName(path);
