@@ -1,31 +1,52 @@
-import htmlValidator from 'html-validator';
+import { ConfigData, HtmlValidate, Message, RuleConfig } from 'html-validate';
 
 import { HtmlPlugin } from '../../models/plugins/HtmlPlugin';
 
-export const validator = (options?: any): HtmlPlugin => {
+export const DEFAULT_OPTIONS: ConfigData = {
+    extends: ['html-validate:document'],
+    rules: {
+        'heading-level': 'off',
+        'require-sri': 'off'
+    }
+};
+
+export const validator = (rules: RuleConfig = {}): HtmlPlugin => {
     return async (html, { context }) => {
         try {
-            const result = await htmlValidator({
-                ...(options ?? {}),
-                data: html,
-                isFragment: false
+            const validator = new HtmlValidate({
+                ...DEFAULT_OPTIONS,
+                rules: {
+                    ...DEFAULT_OPTIONS.rules,
+                    ...rules
+                }
             });
-            context.logger.debug(
-                `HTML source valid.\nMessages: ${JSON.stringify(
-                    result.messages,
-                    null,
-                    4
-                )}`
-            );
+            const result = await validator.validateString(html);
+            if (result.valid) {
+                context.logger.debug(
+                    `HTML source valid.\nMessages: ${getValidatorMessages(result)}`
+                );
+            } else {
+                context.logger.error(
+                    `HTML source validation error: ${getValidatorMessages(result)}`
+                );
+            }
         } catch (error) {
-            context.logger.error(
-                `HTML source validation error: ${JSON.stringify(
-                    error,
-                    null,
-                    4
-                )}`
-            );
+            context.logger.error('Cannot validate HTML', error);
         }
         return html;
     };
+
+    function getValidatorMessages(
+        result: Awaited<
+            ReturnType<typeof HtmlValidate.prototype.validateString>
+        >
+    ): string {
+        return JSON.stringify(
+            result.results.reduce((acc, r) => {
+                return acc.concat(r.messages);
+            }, [] as Message[]),
+            null,
+            4
+        );
+    }
 };

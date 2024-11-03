@@ -1,3 +1,5 @@
+import { ElementContent } from 'hast';
+
 import { Section } from '../../structure/Structure';
 import { AstPlugin } from '../AstPlugin';
 import { Chapter } from '../Chapter';
@@ -11,4 +13,7 @@ export interface ChapterState<T, S> {
     section: Section;
 }
 
-export type ChapterAstPlugin<T, S> = AstPlugin<ChapterState<T, S>>;
+export type ChapterAstPlugin<T, S> = AstPlugin<
+    ChapterState<T, S>,
+    ElementContent
+>;

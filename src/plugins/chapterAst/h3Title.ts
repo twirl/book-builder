@@ -1,9 +1,7 @@
-import { Element } from 'hast';
+import { ElementContent } from 'hast';
 import striptags from 'striptags';
 
 import { Action } from '../../models/AstPlugin';
-import { Context } from '../../models/Context';
-import { L10n } from '../../models/L10n';
 import {
     ChapterAstPlugin,
     ChapterState
@@ -21,8 +19,8 @@ export class H3TitlePlugin<T, S> implements ChapterAstPlugin<T, S> {
         return this;
     }
 
-    public async run(node: Element): Promise<Action> {
-        if (node.tagName === 'h3') {
+    public async run(node: ElementContent): Promise<Action<ElementContent>> {
+        if (node.type === 'element' && node.tagName === 'h3') {
             this.h3Contents.push(striptags(await astNodeToHtml(node)));
             return this.h3Contents.length === 1
                 ? { action: 'replace', newValue: [] }
@@ -30,6 +28,7 @@ export class H3TitlePlugin<T, S> implements ChapterAstPlugin<T, S> {
         }
         return { action: 'continue_nested' };
     }
+
     public async finish(state: ChapterState<T, S>) {
         if (this.h3Contents.length) {
             state.chapter.title = state.l10n.templates.jointHeaders(

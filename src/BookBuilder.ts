@@ -32,9 +32,8 @@ export class BookBuilder {
             locale: string;
             templates: Partial<Templates> & T;
         },
-        pipeline: Pipeline<T, S>,
-        options: BuilderOptionsMap[B],
-        builderPlugins: BuilderPluginMap[B][]
+        pipeline: Pipeline<T, S, B>,
+        options: BuilderOptionsMap[B]
     ): Promise<void> {
         const l10n: L10n<T, S> = {
             strings: l10nParameters.strings,
@@ -67,12 +66,7 @@ export class BookBuilder {
 
         switch (target) {
             case 'html':
-                await htmlBuilder(
-                    this.structure,
-                    state,
-                    options,
-                    builderPlugins
-                );
+                await htmlBuilder(this.structure, state, pipeline, options);
                 break;
             default:
                 this.context.logger.error('Unknown target', target);
@@ -92,7 +86,12 @@ export async function init(parameters: Parameters) {
         resolve(options.tmpDir),
         options.noCache
     );
-    const context: Context = { logger, cache, options };
+    const context: Context = {
+        logger,
+        cache,
+        options,
+        source: parameters.source
+    };
 
     const structure = await getStructure(parameters.source, context);
 

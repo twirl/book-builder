@@ -5,7 +5,7 @@ import {
     ChapterState
 } from '../models/plugins/ChapterAstPlugin';
 import { Structure } from '../structure/Structure';
-import { applyPluginToAst } from '../util/applyAstPlugin';
+import { applyHastPluginToAst } from '../util/applyHastAstPlugin';
 
 export const chapterAstPipeline = async <T, S>(
     structure: Structure,
@@ -22,7 +22,7 @@ export const chapterAstPipeline = async <T, S>(
                 section
             };
             for (const plugin of plugins) {
-                await applyPluginToAst(chapter.content, plugin, state);
+                await applyHastPluginToAst(chapter.content, plugin, state);
             }
         }
     }

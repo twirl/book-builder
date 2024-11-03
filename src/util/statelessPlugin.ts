@@ -1,23 +1,23 @@
-import { Element } from 'hast';
+import { ElementContent } from 'hast';
 
 import { Action, AstPlugin } from '../models/AstPlugin';
 
-export function createStatelessPlugin<T>(
-    runner: (input: Element, state: T, options: undefined) => Promise<Action>
-): AstPlugin<T>;
+export function createStatelessPlugin<T, C = ElementContent>(
+    runner: (input: C, state: T, options: undefined) => Promise<Action<C>>
+): AstPlugin<T, C>;
 
-export function createStatelessPlugin<T, O>(
-    runner: (input: Element, state: T, options: O) => Promise<Action>,
+export function createStatelessPlugin<T, O, C = ElementContent>(
+    runner: (input: C, state: T, options: O) => Promise<Action<C>>,
     options: O
-): AstPlugin<T>;
+): AstPlugin<T, C>;
 
-export function createStatelessPlugin<T, O>(
-    runner: (input: Element, state: T, options?: O) => Promise<Action>,
+export function createStatelessPlugin<T, O, C = ElementContent>(
+    runner: (input: C, state: T, options?: O) => Promise<Action<C>>,
     options?: O
-): AstPlugin<T> {
+): AstPlugin<T, C> {
     return {
         init: async (state: T) => ({
-            run: (input: Element) => runner(input, state, options),
+            run: (input: C) => runner(input, state, options),
             finish: async () => {}
         })
     };

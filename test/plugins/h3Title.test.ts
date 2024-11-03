@@ -9,7 +9,7 @@ import { Strings } from '../../src/models/Strings';
 import { Templates } from '../../src/models/Templates';
 import { h3Title } from '../../src/plugins/chapterAst/h3Title';
 import { markdownToAst } from '../../src/preprocessors/markdown';
-import { applyPluginToAst } from '../../src/util/applyAstPlugin';
+import { applyHastPluginToAst } from '../../src/util/applyHastAstPlugin';
 
 const context = {} as any as Context;
 const templates = {
@@ -18,7 +18,8 @@ const templates = {
         _counter: number,
         _context: Context,
         parts: string[]
-    ) => parts.join('-')
+    ) => parts.join('-'),
+    jointHeaders: (headers: string[]) => headers.join('-')
 } as any as Templates;
 
 describe('H3 to title', () => {
@@ -66,7 +67,7 @@ describe('H3 to title', () => {
                 l10n,
                 context
             } as any as ChapterState<{}, {}>;
-            await applyPluginToAst(ast, plugin, state);
+            await applyHastPluginToAst(ast, plugin, state);
 
             expect(state.chapter).toEqual(expected);
         });

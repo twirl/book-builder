@@ -78,7 +78,7 @@ export const DEFAULT_TEMPLATES = {
         `<h3>${l10n.templates.htmlAnchor(chapter.title, chapter.anchor)}</h3>`,
 
     htmlAnchor: (text: string, anchor: string) =>
-        `<a name="#${escapeHtml(anchor)}">${escapeHtml(text)}</a>`,
+        `<a id="${escapeHtml(anchor)}">${escapeHtml(text)}</a>`,
 
     html: {
         aImg: <T, S>({

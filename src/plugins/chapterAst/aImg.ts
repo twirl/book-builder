@@ -2,7 +2,7 @@ import { Element } from 'hast';
 
 import { ChapterState } from '../../models/plugins/ChapterAstPlugin';
 import { htmlToAstElements } from '../../preprocessors/html';
-import { isElement } from '../../util/applyAstPlugin';
+import { isElement } from '../../util/applyHastAstPlugin';
 import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const aImg = <T, S>() =>

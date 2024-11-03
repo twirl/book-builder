@@ -5,7 +5,7 @@ import remarkRehype from 'remark-rehype';
 import { unified } from 'unified';
 
 import { AstPlugin } from '../models/AstPlugin';
-import { applyPluginToAst } from '../util/applyAstPlugin';
+import { applyHastPluginToAst } from '../util/applyHastAstPlugin';
 
 export const preprocessMarkdown = async <T>(
     md: string,
@@ -15,7 +15,7 @@ export const preprocessMarkdown = async <T>(
     const ast = await markdownToAst(md);
 
     for (const plugin of plugins) {
-        await applyPluginToAst(ast, plugin, state);
+        await applyHastPluginToAst(ast, plugin, state);
     }
 };
 

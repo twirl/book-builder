@@ -1,12 +1,14 @@
+import { BuilderMap } from '../builders';
 import { Structure } from '../structure/Structure';
 import { Context } from './Context';
 import { L10n } from './L10n';
+import { Pipeline } from './Pipeline';
 
-export type Builder<T, S, O, P> = (
+export type Builder<T, S, O, B extends keyof BuilderMap<T, S>> = (
     structure: Structure,
     state: BuilderState<T, S>,
-    options: O,
-    plugins?: P[]
+    pipeline: Pipeline<T, S, B>,
+    options: O
 ) => Promise<void>;
 
 export interface BuilderState<T, S> {

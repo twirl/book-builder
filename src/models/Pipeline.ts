@@ -1,11 +1,31 @@
+import { BuilderMap } from '../builders';
 import { ChapterAstPlugin } from './plugins/ChapterAstPlugin';
+import { CssAstPlugin } from './plugins/CssAstPlugin';
+import { HtmlPlugin } from './plugins/HtmlPlugin';
 import { StructurePlugin } from './plugins/StructurePlugin';
 
-export interface Pipeline<T, S> {
+export type Pipeline<T, S, B extends keyof BuilderMap<T, S>> = CommonPipeline<
+    T,
+    S
+> &
+    PipelineMap<T, S>[B];
+
+export interface CommonPipeline<T, S> {
     chapters: {
         astPlugins: Array<ChapterAstPlugin<T, S>>;
     };
     structure: {
         plugins: Array<StructurePlugin<T, S>>;
+    };
+}
+
+export interface PipelineMap<T, S> {
+    html: {
+        html: {
+            plugins: Array<HtmlPlugin>;
+        };
+        css: {
+            plugins: Array<CssAstPlugin<T, S>>;
+        };
     };
 }

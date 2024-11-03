@@ -1,15 +1,18 @@
-import { Element, ElementContent } from 'hast';
+import { ElementContent } from 'hast';
 
-export interface AstPlugin<State> {
-    init: (state: State) => Promise<AstPluginRunner<State>>;
+export interface AstPlugin<State, C = ElementContent> {
+    init: (state: State) => Promise<AstPluginRunner<State, C>>;
 }
 
-export interface AstPluginRunner<State> {
-    run: (input: Element) => Promise<Action>;
+export interface AstPluginRunner<State, C = ElementContent> {
+    run: (input: C) => Promise<Action<C>>;
     finish: (state: State) => Promise<void>;
 }
 
-export type Action = ContinueAction | ContinueNestedAction | ReplaceAction;
+export type Action<C = ElementContent> =
+    | ContinueAction
+    | ContinueNestedAction
+    | ReplaceAction<C>;
 
 export interface ContinueAction {
     action: 'continue';
@@ -19,9 +22,7 @@ export interface ContinueNestedAction {
     action: 'continue_nested';
 }
 
-export interface ReplaceAction {
+export interface ReplaceAction<C = ElementContent> {
     action: 'replace';
-    newValue: ElementContent | ElementContent[];
+    newValue: C | C[];
 }
-
-export type PluginState = Record<string, any>;

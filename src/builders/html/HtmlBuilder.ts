@@ -1,16 +1,17 @@
 import { writeFile } from 'node:fs/promises';
 
 import { Builder, BuilderState } from '../../models/Builder';
-import { HtmlPlugin } from '../../models/plugins/HtmlPlugin';
+import { Pipeline } from '../../models/Pipeline';
+import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
 
-export type HtmlBuilder<T, S> = Builder<T, S, HtmlBuilderOptions, HtmlPlugin>;
+export type HtmlBuilder<T, S> = Builder<T, S, HtmlBuilderOptions, 'html'>;
 
 export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
     structure: Structure,
     state: BuilderState<T, S>,
-    options: HtmlBuilderOptions,
-    htmlPlugins: HtmlPlugin[] = []
+    pipeline: Pipeline<T, S, 'html'>,
+    options: HtmlBuilderOptions
 ) => {
     const htmlParts = [];
     const templates = state.l10n.templates;
@@ -23,14 +24,21 @@ export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
         }
     }
 
+    const css = await cssAstPipeline(
+        options.css,
+        state.context,
+        state.l10n,
+        pipeline.css.plugins
+    );
+
     const htmlDocumentParts = {
         htmlBody: htmlParts.join(''),
         htmlHead: '',
-        css: options.css
+        css
     };
     let html = templates.htmlDocument(htmlDocumentParts, state);
 
-    for (const plugin of htmlPlugins) {
+    for (const plugin of pipeline.html.plugins) {
         html = await plugin(html, state);
     }
 

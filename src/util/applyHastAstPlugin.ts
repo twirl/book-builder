@@ -3,9 +3,9 @@ import { Element, ElementContent, Root, RootContent } from 'hast';
 import { AstPlugin, AstPluginRunner, ReplaceAction } from '../models/AstPlugin';
 import { htmlToAst } from '../preprocessors/html';
 
-export const applyPluginToAst = async <T>(
+export const applyHastPluginToAst = async <T>(
     ast: Root,
-    plugin: AstPlugin<T>,
+    plugin: AstPlugin<T, ElementContent>,
     state: T
 ): Promise<void> => {
     const runner = await plugin.init(state);
@@ -21,9 +21,9 @@ export const applyPluginToAst = async <T>(
     await runner.finish(state);
 };
 
-export const applyPluginToNode = async <T>(
+export const applyPluginToNode = async <State>(
     node: Element,
-    plugin: AstPluginRunner<T>
+    plugin: AstPluginRunner<State, ElementContent>
 ): Promise<ElementContent[]> => {
     const result = await plugin.run(node);
     switch (result.action) {
