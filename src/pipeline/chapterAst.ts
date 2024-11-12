@@ -4,10 +4,12 @@ import {
     ChapterAstPlugin,
     ChapterState
 } from '../models/plugins/ChapterAstPlugin';
+import { Strings } from '../models/Strings';
+import { Templates } from '../models/Templates';
 import { Structure } from '../structure/Structure';
 import { applyHastPluginToAst } from '../util/applyHastAstPlugin';
 
-export const chapterAstPipeline = async <T, S>(
+export const chapterAstPipeline = async <T extends Templates<Strings & S>, S>(
     structure: Structure,
     context: Context,
     l10n: L10n<T, S>,

@@ -19,8 +19,8 @@ const templates = {
         _context: Context,
         parts: string[]
     ) => parts.join('-'),
-    jointHeaders: (headers: string[]) => headers.join('-')
-} as any as Templates;
+    jointTitle: (headers: string[]) => headers.join('-')
+} as any as Templates<Strings>;
 
 describe('H3 to title', () => {
     Object.entries({
@@ -53,20 +53,20 @@ describe('H3 to title', () => {
         }
     }).forEach(([testCase, { md, chapter, expected }]) => {
         it(testCase, async () => {
-            const l10n: L10n<{}, {}> = {
+            const l10n: L10n<Templates<Strings>, {}> = {
                 templates,
                 strings: {} as any as Strings,
                 language: 'en',
                 locale: 'en-US'
             };
-            const plugin = h3Title();
+            const plugin = h3Title<Templates<Strings>, {}>();
 
             const ast = await markdownToAst(md);
             const state = {
                 chapter,
                 l10n,
                 context
-            } as any as ChapterState<{}, {}>;
+            } as any as ChapterState<Templates<Strings>, {}>;
             await applyHastPluginToAst(ast, plugin, state);
 
             expect(state.chapter).toEqual(expected);

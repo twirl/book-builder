@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 
-import { BuilderMap, BuilderOptionsMap, BuilderPluginMap } from './builders';
+import { BuilderMap, BuilderOptionsMap } from './builders';
 import { htmlBuilder } from './builders/html/HtmlBuilder';
 import { Cache } from './Cache';
 import { BuilderState } from './models/Builder';
@@ -16,35 +16,23 @@ import { Templates } from './models/Templates';
 import { chapterAstPipeline } from './pipeline/chapterAst';
 import { structurePipeline } from './pipeline/structure';
 import { getStructure, Structure } from './structure/Structure';
-import { DEFAULT_TEMPLATES } from './templates/defaultTemplates';
 
 export class BookBuilder {
     constructor(
-        private readonly structure: Structure,
-        private readonly context: Context
+        public readonly structure: Structure,
+        public readonly context: Context
     ) {}
 
-    public async build<T, S, B extends keyof BuilderMap<T, S>>(
+    public async build<
+        T extends Templates<S & Strings>,
+        S,
+        B extends keyof BuilderMap<T, S>
+    >(
         target: B,
-        l10nParameters: {
-            strings: Strings & S;
-            language: string;
-            locale: string;
-            templates: Partial<Templates> & T;
-        },
+        l10n: L10n<T, S>,
         pipeline: Pipeline<T, S, B>,
         options: BuilderOptionsMap[B]
     ): Promise<void> {
-        const l10n: L10n<T, S> = {
-            strings: l10nParameters.strings,
-            language: l10nParameters.language,
-            locale: l10nParameters.locale,
-            templates: {
-                ...DEFAULT_TEMPLATES,
-                ...l10nParameters.templates
-            }
-        };
-
         await chapterAstPipeline(
             this.structure,
             this.context,
@@ -111,7 +99,8 @@ export interface AstPipeline<T, S> {
 export const DEFAULT_OPTIONS: Options = {
     tmpDir: './tmp',
     noCache: false,
-    logLevel: LogLevel.ERROR,
+    logLevel: LogLevel.DEBUG,
+    generateTableOfContents: true,
     sample: false
 };
 

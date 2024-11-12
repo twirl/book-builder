@@ -1,3 +1,9 @@
-import { DEFAULT_TEMPLATES } from '../templates/defaultTemplates';
+import { DefaultTemplates } from '../templates/Templates';
+import { CssClasses } from './CssClasses';
+import { Strings } from './Strings';
 
-export type Templates = typeof DEFAULT_TEMPLATES;
+export type Templates<S = Strings, C = CssClasses> = S extends Strings
+    ? C extends CssClasses
+        ? DefaultTemplates<S, C>
+        : never
+    : never;

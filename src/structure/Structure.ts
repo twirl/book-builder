@@ -2,8 +2,6 @@ import { Root } from 'hast';
 
 import { Chapter } from '../models/Chapter';
 import { Context } from '../models/Context';
-import { L10n } from '../models/L10n';
-import { ChapterAstPlugin } from '../models/plugins/ChapterAstPlugin';
 import { Source } from '../models/Source';
 import { Counters } from './helpers/Counters';
 import { getSectionParametersFromSource } from './helpers/getSectionParametersFromSource';
@@ -54,7 +52,8 @@ export class Section {
         public readonly title: string,
         public readonly anchor: string,
         public readonly counter: number,
-        private content?: Root
+        private content?: Root,
+        private skipTableOfContents = false
     ) {}
 
     public getContent() {
@@ -75,5 +74,9 @@ export class Section {
 
     public removeAllChapters() {
         this.chapters = [];
+    }
+
+    public inTableOfContents() {
+        return !this.skipTableOfContents;
     }
 }

@@ -7,7 +7,7 @@ import { buildChapterFromSource } from './buildChapterFromSource';
 import { Counters } from './Counters';
 import { SectionParameters } from './getSectionParametersFromSource';
 
-export const getSectionWithChaptersFromParameters = async <T, S>(
+export const getSectionWithChaptersFromParameters = async (
     parameters: SectionParameters,
     counters: Counters,
     context: Context

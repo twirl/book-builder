@@ -8,16 +8,16 @@ import {
 } from '../../models/plugins/ChapterAstPlugin';
 import { astNodeToHtml } from '../../util/astToHtml';
 
-export const h3Title = () => new H3TitlePlugin();
+export const h3Title = <T, S>(): ChapterAstPlugin<T, S> => {
+    return {
+        init: async () => new H3TitlePlugin<T, S>()
+    };
+};
 
-export class H3TitlePlugin<T, S> implements ChapterAstPlugin<T, S> {
+export class H3TitlePlugin<T, S> {
     private readonly h3Contents: string[] = [];
 
     constructor() {}
-
-    public async init() {
-        return this;
-    }
 
     public async run(node: ElementContent): Promise<Action<ElementContent>> {
         if (node.type === 'element' && node.tagName === 'h3') {
@@ -31,7 +31,7 @@ export class H3TitlePlugin<T, S> implements ChapterAstPlugin<T, S> {
 
     public async finish(state: ChapterState<T, S>) {
         if (this.h3Contents.length) {
-            state.chapter.title = state.l10n.templates.jointHeaders(
+            state.chapter.title = state.l10n.templates.jointTitle(
                 this.h3Contents
             );
         }

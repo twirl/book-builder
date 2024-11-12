@@ -13,17 +13,6 @@ export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
     pipeline: Pipeline<T, S, 'html'>,
     options: HtmlBuilderOptions
 ) => {
-    const htmlParts = [];
-    const templates = state.l10n.templates;
-    for (const section of structure.getSections()) {
-        if (section.getContent()) {
-            htmlParts.push(await templates.htmlSectionContent(section, state));
-        }
-        for (const chapter of section.getChapters()) {
-            htmlParts.push(await templates.htmlChapterContent(chapter, state));
-        }
-    }
-
     const css = await cssAstPipeline(
         options.css,
         state.context,
@@ -31,13 +20,7 @@ export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
         pipeline.css.plugins
     );
 
-    const htmlDocumentParts = {
-        htmlBody: htmlParts.join(''),
-        htmlHead: '',
-        css
-    };
-    let html = templates.htmlDocument(htmlDocumentParts, state);
-
+    let html = await state.l10n.templates.htmlDocument(structure, css);
     for (const plugin of pipeline.html.plugins) {
         html = await plugin(html, state);
     }
