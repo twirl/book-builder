@@ -1,5 +1,7 @@
 import { resolve } from 'node:path';
 
+import datauri from 'datauri';
+
 import { BuilderMap, BuilderOptionsMap } from './builders';
 import { htmlBuilder } from './builders/html/HtmlBuilder';
 import { Cache } from './Cache';
@@ -52,6 +54,14 @@ export class BookBuilder {
                 this.context.logger.error('Unknown target', target);
                 throw new Error(`Unknown target: ${target}`);
         }
+    }
+
+    public async toDataUri(path: string): Promise<string> {
+        return (
+            (await datauri(
+                resolve(this.context.source.base, ...path.split('/'))
+            )) ?? path
+        );
     }
 }
 

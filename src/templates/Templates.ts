@@ -154,7 +154,9 @@ export class DefaultTemplates<
     }
 
     public async htmlChapter(chapter: Chapter) {
-        return `${await this.htmlChapterTitle(chapter)}${await this.htmlChapterContent(chapter.content)}`;
+        return `${await this.htmlChapterTitle(chapter)}${await this.htmlChapterContent(
+            chapter.content
+        )}`;
     }
 
     public async htmlChapterTitle(chapter: Chapter) {
@@ -210,6 +212,10 @@ export class DefaultTemplates<
 
     public async htmlPageBreak() {
         return `<div ${this.cssClass('pageBreak')}></div>`;
+    }
+
+    public async htmlCode(html: string, language: string) {
+        return `<pre><code data-language="${escapeHtml(language)}">${html}</code></pre>`;
     }
 }
 

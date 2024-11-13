@@ -6,7 +6,8 @@ import { isElement } from '../../util/applyHastAstPlugin';
 import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const aImg = <T, S>() =>
-    createStatelessPlugin<ChapterState<T, S>>(
+    createStatelessPlugin<'chapter_ast_plugin', ChapterState<T, S>>(
+        'chapter_ast_plugin',
         async (p: Element, { l10n }: ChapterState<T, S>) => {
             if (p.children && p.children.length == 1) {
                 const node = p.children[0];
