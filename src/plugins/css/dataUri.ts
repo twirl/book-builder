@@ -11,38 +11,40 @@ export const dataUri = <T, S>(options: Partial<DataUriPluginOptions> = {}) => {
         ...DEFAULT_OPTIONS,
         ...options
     };
-    return createStatelessPlugin<CssPluginState<T, S>, CssNode>(
-        async (input, state) => {
-            if (
-                'block' in input &&
-                input.block !== null &&
-                'children' in input.block
-            ) {
-                for (const item of input.block.children.toArray()) {
-                    if (
-                        item.type === 'Declaration' &&
-                        resolvedOptions.properties.has(item.property) &&
-                        item.value.type === 'Value'
-                    ) {
-                        for (const value of item.value.children.toArray()) {
-                            if (value.type === 'Url') {
-                                const data = await datauri(
-                                    resolve(
-                                        state.context.source.base,
-                                        ...value.value.split('/')
-                                    )
-                                );
-                                if (data) {
-                                    value.value = data;
-                                }
+    return createStatelessPlugin<
+        'css_ast_plugin',
+        CssPluginState<T, S>,
+        CssNode
+    >('css_ast_plugin', async (input, state) => {
+        if (
+            'block' in input &&
+            input.block !== null &&
+            'children' in input.block
+        ) {
+            for (const item of input.block.children.toArray()) {
+                if (
+                    item.type === 'Declaration' &&
+                    resolvedOptions.properties.has(item.property) &&
+                    item.value.type === 'Value'
+                ) {
+                    for (const value of item.value.children.toArray()) {
+                        if (value.type === 'Url') {
+                            const data = await datauri(
+                                resolve(
+                                    state.context.source.base,
+                                    ...value.value.split('/')
+                                )
+                            );
+                            if (data) {
+                                value.value = data;
                             }
                         }
                     }
                 }
             }
-            return { action: 'continue_nested' };
         }
-    );
+        return { action: 'continue_nested' };
+    });
 };
 
 export interface DataUriPluginOptions {

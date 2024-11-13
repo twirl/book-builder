@@ -11,11 +11,8 @@ export type Pipeline<T, S, B extends keyof BuilderMap<T, S>> = CommonPipeline<
     PipelineMap<T, S>[B];
 
 export interface CommonPipeline<T, S> {
-    chapters: {
-        astPlugins: Array<ChapterAstPlugin<T, S>>;
-    };
     structure: {
-        plugins: Array<StructurePlugin<T, S>>;
+        plugins: Array<StructurePlugin<T, S> | ChapterAstPlugin<T, S>>;
     };
 }
 

@@ -11,7 +11,7 @@ export const DEFAULT_OPTIONS: ConfigData = {
 };
 
 export const validator = (rules: RuleConfig = {}): HtmlPlugin => {
-    return async (html, { context }) => {
+    const callback: HtmlPlugin = async (html, { context }) => {
         try {
             const validator = new HtmlValidate({
                 ...DEFAULT_OPTIONS,
@@ -35,18 +35,19 @@ export const validator = (rules: RuleConfig = {}): HtmlPlugin => {
         }
         return html;
     };
+    callback.type = 'html_plugin';
 
-    function getValidatorMessages(
-        result: Awaited<
-            ReturnType<typeof HtmlValidate.prototype.validateString>
-        >
-    ): string {
-        return JSON.stringify(
-            result.results.reduce((acc, r) => {
-                return acc.concat(r.messages);
-            }, [] as Message[]),
-            null,
-            4
-        );
-    }
+    return callback;
 };
+
+export function getValidatorMessages(
+    result: Awaited<ReturnType<typeof HtmlValidate.prototype.validateString>>
+): string {
+    return JSON.stringify(
+        result.results.reduce((acc, r) => {
+            return acc.concat(r.messages);
+        }, [] as Message[]),
+        null,
+        4
+    );
+}

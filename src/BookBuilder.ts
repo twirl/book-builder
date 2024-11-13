@@ -13,7 +13,6 @@ import { ChapterAstPlugin } from './models/plugins/ChapterAstPlugin';
 import { Source } from './models/Source';
 import { Strings } from './models/Strings';
 import { Templates } from './models/Templates';
-import { chapterAstPipeline } from './pipeline/chapterAst';
 import { structurePipeline } from './pipeline/structure';
 import { getStructure, Structure } from './structure/Structure';
 
@@ -33,13 +32,6 @@ export class BookBuilder {
         pipeline: Pipeline<T, S, B>,
         options: BuilderOptionsMap[B]
     ): Promise<void> {
-        await chapterAstPipeline(
-            this.structure,
-            this.context,
-            l10n,
-            pipeline.chapters.astPlugins
-        );
-
         await structurePipeline(
             this.structure,
             this.context,

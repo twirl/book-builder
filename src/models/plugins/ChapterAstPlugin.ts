@@ -16,4 +16,6 @@ export interface ChapterState<T, S> {
 export type ChapterAstPlugin<T, S> = AstPlugin<
     ChapterState<T, S>,
     ElementContent
->;
+> & {
+    type: 'chapter_ast_plugin';
+};

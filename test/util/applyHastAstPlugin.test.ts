@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 
 import { expect } from 'expect';
-import { Element, ElementContent, Text } from 'hast';
+import { ElementContent, Text } from 'hast';
 
 import { Action, AstPlugin } from '../../src/models/AstPlugin';
 import { markdownToAst } from '../../src/preprocessors/markdown';
@@ -17,15 +17,18 @@ describe('Hast Ast Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyHastPluginToAst(
             ast,
-            createStatelessPlugin<void>(async (element) => {
-                if (
-                    element.type === 'element' &&
-                    element.tagName === 'strong'
-                ) {
-                    (element.children[0] as Text).value = 'indeed';
+            createStatelessPlugin<'chapter_ast_plugin', void>(
+                'chapter_ast_plugin',
+                async (element) => {
+                    if (
+                        element.type === 'element' &&
+                        element.tagName === 'strong'
+                    ) {
+                        (element.children[0] as Text).value = 'indeed';
+                    }
+                    return { action: 'continue_nested' };
                 }
-                return { action: 'continue_nested' };
-            }),
+            ),
             undefined
         );
         expect(await astToHtml(ast)).toEqual(
@@ -58,7 +61,7 @@ describe('Hast Ast Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyHastPluginToAst(
             ast,
-            createStatelessPlugin(async (element) => {
+            createStatelessPlugin('chapter_ast_plugin', async (element) => {
                 if (element.type === 'element') {
                     if (element.properties.href === '/link2') {
                         element.properties.href = '/link3';
@@ -81,7 +84,7 @@ describe('Hast Ast Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyHastPluginToAst(
             ast,
-            createStatelessPlugin(async (element) => {
+            createStatelessPlugin('chapter_ast_plugin', async (element) => {
                 if (
                     element.type === 'element' &&
                     element.tagName === 'strong'
@@ -101,17 +104,20 @@ describe('Hast Ast Plugins', () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
         await applyHastPluginToAst(
             ast,
-            createStatelessPlugin(async (element: ElementContent) => {
-                if (element.type === 'element') {
-                    if (element.tagName === 'a') {
-                        return replaceFromHtml('<strong>strong</strong>');
+            createStatelessPlugin(
+                'chapter_ast_plugin',
+                async (element: ElementContent) => {
+                    if (element.type === 'element') {
+                        if (element.tagName === 'a') {
+                            return replaceFromHtml('<strong>strong</strong>');
+                        }
+                        if (element.tagName === 'strong') {
+                            return replaceFromHtml('<em>em</em><br/>');
+                        }
                     }
-                    if (element.tagName === 'strong') {
-                        return replaceFromHtml('<em>em</em><br/>');
-                    }
+                    return { action: 'continue_nested' };
                 }
-                return { action: 'continue_nested' };
-            }),
+            ),
             null
         );
         expect(await astToHtml(ast)).toEqual(

@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 import expect from 'expect';
 
 import { Context } from '../../src/models/Context';
+import { CssClasses } from '../../src/models/CssClasses';
 import { L10n } from '../../src/models/L10n';
 import { ChapterState } from '../../src/models/plugins/ChapterAstPlugin';
 import { Strings } from '../../src/models/Strings';
@@ -20,7 +21,7 @@ const templates = {
         parts: string[]
     ) => parts.join('-'),
     jointTitle: (headers: string[]) => headers.join('-')
-} as any as Templates<Strings>;
+} as any as Templates<Strings, CssClasses>;
 
 describe('H3 to title', () => {
     Object.entries({
@@ -53,7 +54,7 @@ describe('H3 to title', () => {
         }
     }).forEach(([testCase, { md, chapter, expected }]) => {
         it(testCase, async () => {
-            const l10n: L10n<Templates<Strings>, {}> = {
+            const l10n: L10n<Templates<Strings, CssClasses>> = {
                 templates,
                 strings: {} as any as Strings,
                 language: 'en',

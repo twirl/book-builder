@@ -10,6 +10,7 @@ import { astNodeToHtml } from '../../util/astToHtml';
 
 export const h3Title = <T, S>(): ChapterAstPlugin<T, S> => {
     return {
+        type: 'chapter_ast_plugin',
         init: async () => new H3TitlePlugin<T, S>()
     };
 };

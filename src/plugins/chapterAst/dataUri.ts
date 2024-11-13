@@ -10,7 +10,8 @@ import { createStatelessPlugin } from '../../util/statelessPlugin';
 export const dataUri = <T, S>(
     matchers: DataUriPluginMatchers = DEFAULT_MATCHERS
 ) => {
-    return createStatelessPlugin<ChapterState<T, S>>(
+    return createStatelessPlugin<'chapter_ast_plugin', ChapterState<T, S>>(
+        'chapter_ast_plugin',
         async (node, state): Promise<Action> => {
             for (const matcher of Object.values(matchers)) {
                 const match = matcher(node);
