@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 import { Context } from '../../models/Context';
 import { Source } from '../../models/Source';
-import { getEntityName } from '../../util/getEntityName';
+import { getEntityAnchor, getEntityName } from '../../util/getEntityName';
 
 export const getSectionParametersFromSource = async (
     source: Source,
@@ -23,8 +23,8 @@ export const getSectionParametersFromSource = async (
         .sort((a, b) => (a.path < b.path ? -1 : 1))
         .map(({ path, fullPath }, index) => ({
             path: fullPath,
-            title: sectionTitle(path),
-            anchor: sectionAnchor(index)
+            title: sectionTitle(path, index),
+            anchor: sectionAnchor(path, index)
         }));
 };
 
@@ -34,6 +34,8 @@ export interface SectionParameters {
     anchor: string;
 }
 
-export const sectionTitle = (path: string) => getEntityName(path);
+export const sectionTitle = (path: string, _counter: number) =>
+    getEntityName(path);
 
-export const sectionAnchor = (counter: number) => `section-${counter + 1}`;
+export const sectionAnchor = (path: string, _counter: number) =>
+    getEntityAnchor(path);

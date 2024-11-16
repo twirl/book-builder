@@ -15,6 +15,10 @@ export class Structure {
         this.sections.push(section);
     }
 
+    public prependSection(section: Section, position: number) {
+        this.sections.splice(position, 0, section);
+    }
+
     public getSections() {
         return this.sections;
     }
@@ -49,9 +53,9 @@ export class Section {
     private chapters: Chapter[] = [];
 
     constructor(
-        public readonly title: string,
-        public readonly anchor: string,
-        public readonly counter: number,
+        public readonly title?: string,
+        public readonly anchor?: string,
+        public readonly counter?: number,
         private content?: Root,
         private skipTableOfContents = false
     ) {}

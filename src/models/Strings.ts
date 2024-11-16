@@ -4,8 +4,6 @@ export interface Strings {
     description: string;
     favicon: string;
     landingUrl: string;
-    imageCredit: string;
-    publicDomain: string;
     chapterTitle: string;
     toc: string;
 }

@@ -42,11 +42,15 @@ export class DefaultTemplates<
     }
 
     public sectionTitle(section: Section) {
-        return section.title;
+        return section.title ?? '';
     }
 
     public chapterTitle(chapter: Chapter) {
         return `${this.strings.chapterTitle} ${chapter.counter}. ${chapter.title}`;
+    }
+
+    public imageTitle({ title }: aImgParams) {
+        return title;
     }
 
     public async htmlDocument(
@@ -81,16 +85,10 @@ export class DefaultTemplates<
 
     public async htmlStructure(structure: Structure) {
         const htmlParts = [];
-        if (this.context.options.generateTableOfContents) {
-            htmlParts.push(
-                await this.htmlTableOfContents(structure),
-                await this.htmlPageBreak()
-            );
-        }
         for (const section of structure.getSections()) {
             htmlParts.push(await this.htmlSection(section));
         }
-        return htmlParts.join('');
+        return htmlParts.join(await this.htmlPageBreak());
     }
 
     public async htmlTableOfContents(structure: Structure) {
@@ -143,10 +141,16 @@ export class DefaultTemplates<
     }
 
     public async htmlSectionTitle(section: Section) {
-        return `<h2>${await this.htmlAnchor(
-            this.sectionTitle(section),
-            section.anchor
-        )}</h2>`;
+        return section.title
+            ? `<h2>${
+                  section.anchor
+                      ? await this.htmlAnchor(
+                            this.sectionTitle(section),
+                            section.anchor
+                        )
+                      : this.sectionTitle(section)
+              }</h2>`
+            : '';
     }
 
     public async htmlSectionContent(content: Root) {
@@ -178,36 +182,23 @@ export class DefaultTemplates<
         )}">${escapeHtml(text)}</a>`;
     }
 
-    public async htmlAImg({
-        src,
-        href,
-        title,
-        alt,
-        className = 'img-wrapper',
-        size
-    }: aImgParams) {
-        const fullTitle = escapeHtml(
-            `${title}${(title.at(-1) ?? '').match(/[\.\?\!\)]/) ? ' ' : '. '} ${
-                alt == 'PD'
-                    ? this.strings.publicDomain
-                    : `${this.strings.imageCredit}: ${alt}`
-            }`
-        );
-        return `<div class="${escapeHtml(className)}"><img src="${escapeHtml(
-            src
-        )}" alt="${fullTitle}" title="${fullTitle}"${size ? ` class="size=${size}"` : ''}/><h6>${escapeHtml(
-            title
-        )}. ${
-            alt == 'PD'
-                ? this.strings.publicDomain
-                : `${escapeHtml(this.strings.imageCredit)}: ${
-                      href
-                          ? `<a href="${escapeHtml(href)}">${escapeHtml(
-                                alt
-                            )}</a>`
-                          : escapeHtml(alt)
-                  }`
-        }</h6></div>`;
+    public async htmlAImg(params: aImgParams) {
+        return `<div ${this.cssClass('imgWrapper')}>${await this.htmlAImgImage(
+            params
+        )}${await this.htmlAImgTitle(params)}</div>`;
+    }
+
+    public async htmlAImgTitle(params: aImgParams) {
+        return `<h6>${escapeHtml(this.imageTitle(params))}</h6>`;
+    }
+
+    public async htmlAImgImage(params: aImgParams) {
+        const fullTitle = this.imageTitle(params);
+        return `<img src="${escapeHtml(
+            params.src
+        )}" alt="${fullTitle}" title="${fullTitle}"${
+            params.size ? ` class="size=${params.size}"` : ''
+        }/>`;
     }
 
     public async htmlPageBreak() {
@@ -224,6 +215,5 @@ export interface aImgParams {
     href: string;
     title: string;
     alt: string;
-    className?: string;
     size?: string;
 }

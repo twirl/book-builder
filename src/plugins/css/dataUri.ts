@@ -50,5 +50,5 @@ export interface DataUriPluginOptions {
 }
 
 export const DEFAULT_OPTIONS: DataUriPluginOptions = {
-    properties: new Set(['src'])
+    properties: new Set(['src', 'background-image'])
 };
