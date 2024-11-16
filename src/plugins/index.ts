@@ -1,6 +1,11 @@
-import * as chapterAst from './chapterAst';
 import * as css from './css';
 import * as html from './html';
 import * as structure from './structure';
+import * as structureAst from './structureAst';
 
-export const plugins = { chapterAst, css, html, structure };
+export const plugins = {
+    structure,
+    structureAst,
+    css,
+    html
+};

@@ -17,7 +17,6 @@ export const hoistSingleChapters = <T, S>() => {
             }
         }
     };
-    callback.type = 'structure_plugin';
 
     return callback;
 };

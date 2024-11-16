@@ -3,14 +3,13 @@ import striptags from 'striptags';
 
 import { Action } from '../../models/AstPlugin';
 import {
-    ChapterAstPlugin,
-    ChapterState
-} from '../../models/plugins/ChapterAstPlugin';
+    StructureAstPlugin,
+    StructureAstState
+} from '../../models/plugins/StructureAstPlugin';
 import { astNodeToHtml } from '../../util/astToHtml';
 
-export const h3Title = <T, S>(): ChapterAstPlugin<T, S> => {
+export const h3Title = <T, S>(): StructureAstPlugin<T, S> => {
     return {
-        type: 'chapter_ast_plugin',
         init: async () => new H3TitlePlugin<T, S>()
     };
 };
@@ -30,7 +29,7 @@ export class H3TitlePlugin<T, S> {
         return { action: 'continue_nested' };
     }
 
-    public async finish(state: ChapterState<T, S>) {
+    public async finish(state: StructureAstState<T, S>) {
         if (this.h3Contents.length) {
             state.chapter.title = state.l10n.templates.jointTitle(
                 this.h3Contents

@@ -5,10 +5,10 @@ import expect from 'expect';
 import { Context } from '../../src/models/Context';
 import { CssClasses } from '../../src/models/CssClasses';
 import { L10n } from '../../src/models/L10n';
-import { ChapterState } from '../../src/models/plugins/ChapterAstPlugin';
+import { StructureAstState } from '../../src/models/plugins/StructureAstPlugin';
 import { Strings } from '../../src/models/Strings';
 import { Templates } from '../../src/models/Templates';
-import { h3Title } from '../../src/plugins/chapterAst/h3Title';
+import { h3Title } from '../../src/plugins/structureAst/h3Title';
 import { markdownToAst } from '../../src/preprocessors/markdown';
 import { applyHastPluginToAst } from '../../src/util/applyHastAstPlugin';
 
@@ -67,7 +67,7 @@ describe('H3 to title', () => {
                 chapter,
                 l10n,
                 context
-            } as any as ChapterState<Templates<Strings>, {}>;
+            } as any as StructureAstState<Templates<Strings>, {}>;
             await applyHastPluginToAst(ast, plugin, state);
 
             expect(state.chapter).toEqual(expected);

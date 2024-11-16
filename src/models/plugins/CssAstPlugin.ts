@@ -9,6 +9,4 @@ export interface CssPluginState<T, S> {
     l10n: L10n<T, S>;
 }
 
-export type CssAstPlugin<T, S> = AstPlugin<CssPluginState<T, S>, CssNode> & {
-    type: 'css_ast_plugin';
-};
+export type CssAstPlugin<T, S> = AstPlugin<CssPluginState<T, S>, CssNode>;

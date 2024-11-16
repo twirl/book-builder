@@ -2,7 +2,7 @@ import { ElementContent, Element } from 'hast';
 import highlight, { LanguageFn } from 'highlight.js';
 
 import { Action } from '../../models/AstPlugin.js';
-import { ChapterState } from '../../models/plugins/ChapterAstPlugin.js';
+import { StructureAstState } from '../../models/plugins/StructureAstPlugin.js';
 import { htmlToAstElements } from '../../preprocessors/html.js';
 import { createStatelessPlugin } from '../../util/statelessPlugin.js';
 
@@ -21,8 +21,7 @@ export const highlighter = <T, S>(options?: HighlighterOptions) => {
         }
     }
 
-    return createStatelessPlugin<'chapter_ast_plugin', ChapterState<T, S>>(
-        'chapter_ast_plugin',
+    return createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
         async (node, state): Promise<Action> => {
             const code = extractCode(node);
             if (code && code.language && languages.includes(code.language)) {

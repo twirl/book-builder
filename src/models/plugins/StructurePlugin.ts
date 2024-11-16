@@ -2,11 +2,7 @@ import { Structure } from '../../structure/Structure';
 import { Context } from '../Context';
 import { L10n } from '../L10n';
 
-export type StructurePlugin<T, S> = StructurePluginCallback<T, S> & {
-    type: 'structure_plugin';
-};
-
-export type StructurePluginCallback<T, S> = (
+export type StructurePlugin<T, S> = (
     structure: Structure,
     state: StructurePluginState<T, S>
 ) => Promise<void>;

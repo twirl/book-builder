@@ -1,20 +1,18 @@
-import { Element } from 'hast';
+import { ElementContent } from 'hast';
 
-import { ChapterState } from '../../models/plugins/ChapterAstPlugin';
+import { StructureAstState } from '../../models/plugins/StructureAstPlugin';
 import { htmlToAstElements } from '../../preprocessors/html';
 import { isElement } from '../../util/applyHastAstPlugin';
 import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const aImg = <T, S>() =>
-    createStatelessPlugin<'chapter_ast_plugin', ChapterState<T, S>>(
-        'chapter_ast_plugin',
-        async (p: Element, { l10n }: ChapterState<T, S>) => {
-            if (p.children && p.children.length == 1) {
+    createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
+        async (p: ElementContent, { l10n }: StructureAstState<T, S>) => {
+            if (isElement(p) && p.children.length == 1) {
                 const node = p.children[0];
                 if (
                     isElement(node) &&
                     node.tagName == 'a' &&
-                    node.children &&
                     node.children.length == 1
                 ) {
                     const img = node.children[0];
@@ -24,13 +22,12 @@ export const aImg = <T, S>() =>
                             .match(/\.(size-\w+)\./);
 
                         const nodes = await htmlToAstElements(
-                            l10n.templates.html.aImg({
+                            await l10n.templates.htmlAImg({
                                 href: (node.properties.href ?? '').toString(),
                                 src: (img.properties.src ?? '').toString(),
                                 alt: (img.properties.alt ?? '').toString(),
                                 title: (img.properties.title ?? '').toString(),
-                                size: size ? size[1] : undefined,
-                                l10n
+                                size: size ? size[1] : undefined
                             })
                         );
                         return { action: 'replace', newValue: nodes };

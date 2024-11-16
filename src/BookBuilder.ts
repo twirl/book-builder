@@ -11,7 +11,7 @@ import { L10n } from './models/L10n';
 import { Logger, LogLevel } from './models/Logger';
 import { Options } from './models/Options';
 import { Pipeline } from './models/Pipeline';
-import { ChapterAstPlugin } from './models/plugins/ChapterAstPlugin';
+import { StructureAstPlugin } from './models/plugins/StructureAstPlugin';
 import { Source } from './models/Source';
 import { Strings } from './models/Strings';
 import { Templates } from './models/Templates';
@@ -95,7 +95,7 @@ export interface Parameters {
 }
 
 export interface AstPipeline<T, S> {
-    chapterAstPlugins: ChapterAstPlugin<T, S>[];
+    chapterAstPlugins: StructureAstPlugin<T, S>[];
 }
 
 export const DEFAULT_OPTIONS: Options = {

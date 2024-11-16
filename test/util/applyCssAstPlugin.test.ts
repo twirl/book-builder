@@ -40,10 +40,9 @@ describe('CSS Ast Plugins', () => {
         const ast = parse(CSS);
         assertIsStylesheet(ast);
         const plugin: TestPlugin = createStatelessPlugin<
-            'css_ast_plugin',
             TestPluginState,
             CssNode
-        >('css_ast_plugin', async (node) => {
+        >(async (node) => {
             if (node.type === 'Rule') {
                 const first = node.block.children.first;
                 if (first?.type === 'Declaration') {
