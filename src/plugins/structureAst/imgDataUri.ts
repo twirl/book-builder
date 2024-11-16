@@ -15,6 +15,7 @@ export const imgDataUri = <T, S>() =>
                 node.tagName === 'img' &&
                 typeof node.properties.src === 'string'
             ) {
+                node.properties.dataOriginalSrc = node.properties.src;
                 node.properties.src = await datauri(
                     resolve(
                         state.context.source.base,

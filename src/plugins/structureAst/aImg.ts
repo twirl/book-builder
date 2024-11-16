@@ -17,7 +17,11 @@ export const aImg = <T, S>() =>
                 ) {
                     const img = node.children[0];
                     if (isElement(img) && img.tagName == 'img') {
-                        const size = (img.properties.src ?? '')
+                        const size = (
+                            img.properties.dataOriginalSrc ??
+                            img.properties.src ??
+                            ''
+                        )
                             .toString()
                             .match(/\.(size-\w+)\./);
 

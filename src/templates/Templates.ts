@@ -197,7 +197,7 @@ export class DefaultTemplates<
         return `<img src="${escapeHtml(
             params.src
         )}" alt="${fullTitle}" title="${fullTitle}"${
-            params.size ? ` class="size=${params.size}"` : ''
+            params.size ? ` class="${params.size}"` : ''
         }/>`;
     }
 
