@@ -3,7 +3,7 @@ import { Stats } from 'node:fs';
 import { Chapter } from '../../models/Chapter';
 import { Context } from '../../models/Context';
 import { markdownToAst } from '../../preprocessors/markdown';
-import { getEntityName } from '../../util/getEntityName';
+import { getEntityAnchor, getEntityName } from '../../util/getEntityName';
 import { readUtf8File } from '../../util/readFile';
 import { Counters } from './Counters';
 
@@ -34,4 +34,4 @@ export const buildChapterFromSource = async (
 export const chapterTitle = (path: string, headers?: string[]) =>
     headers && headers.length ? headers.join('. ') : getEntityName(path);
 
-export const chapterAnchor = (path: string) => getEntityName(path);
+export const chapterAnchor = (path: string) => getEntityAnchor(path);
