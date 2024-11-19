@@ -74,7 +74,8 @@ export async function init(parameters: Parameters) {
     const cache = await Cache.init(
         logger,
         resolve(options.tmpDir),
-        options.noCache
+        options.noCache,
+        options.purgeCache
     );
     const context: Context = {
         logger,
@@ -101,8 +102,8 @@ export interface AstPipeline<T, S> {
 export const DEFAULT_OPTIONS: Options = {
     tmpDir: './tmp',
     noCache: false,
+    purgeCache: false,
     logLevel: LogLevel.DEBUG,
-    generateTableOfContents: true,
     sample: false
 };
 

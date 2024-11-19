@@ -1,5 +1,12 @@
 import { constants } from 'node:fs';
-import { access, readFile, writeFile, stat, mkdir } from 'node:fs/promises';
+import {
+    access,
+    readFile,
+    writeFile,
+    stat,
+    mkdir,
+    unlink
+} from 'node:fs/promises';
 
 import { resolve } from 'path';
 
@@ -9,17 +16,25 @@ export class Cache {
     constructor(
         private readonly logger: Logger,
         private readonly dir: string,
-        private disabled = false
-    ) {}
+        private disabled = false,
+        private purgeMode = false
+    ) {
+        logger.debug('Cache initialized', { disabled, purgeMode });
+    }
 
     public isEnabled() {
         return !this.disabled;
     }
 
+    public isPurgeMode() {
+        return this.purgeMode;
+    }
+
     public static async init(
         logger: Logger,
         dir: string,
-        disabled = false
+        disabled = false,
+        purgeMode = false
     ): Promise<Cache> {
         if (!disabled) {
             try {
@@ -43,7 +58,7 @@ export class Cache {
                 return new Cache(logger, dir, true);
             }
         }
-        return new Cache(logger, dir, disabled);
+        return new Cache(logger, dir, disabled, purgeMode);
     }
 
     public async getCachedOrPutToCache(
@@ -87,9 +102,12 @@ export class Cache {
             const stats = await stat(fileName);
 
             try {
-                if (stats.mtimeMs > dateMs) {
+                if (stats.mtimeMs > dateMs && !this.purgeMode) {
                     const content = await readFile(fileName);
                     return content;
+                }
+                if (this.purgeMode) {
+                    await unlink(fileName);
                 }
             } catch (e) {
                 this.logger.error(e);
