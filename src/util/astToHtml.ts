@@ -2,15 +2,17 @@ import { Element, Root } from 'hast';
 import rehypeStringify from 'rehype-stringify';
 import { unified } from 'unified';
 
-export const astToHtml = async (ast: Root): Promise<string> => {
+import { HtmlString } from '../models/Types';
+
+export const astToHtml = async (ast: Root): Promise<HtmlString> => {
     return unified()
         .use(rehypeStringify, {
             closeSelfClosing: true
         })
-        .stringify(ast);
+        .stringify(ast) as HtmlString;
 };
 
-export const astNodeToHtml = async (ast: Element): Promise<string> => {
+export const astNodeToHtml = async (ast: Element): Promise<HtmlString> => {
     return unified()
         .use(rehypeStringify, {
             closeSelfClosing: true
@@ -18,5 +20,5 @@ export const astNodeToHtml = async (ast: Element): Promise<string> => {
         .stringify({
             type: 'root',
             children: [ast]
-        });
+        }) as HtmlString;
 };

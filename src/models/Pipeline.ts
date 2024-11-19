@@ -1,7 +1,6 @@
 import { BuilderMap } from '../builders';
 import { CssAstPlugin } from './plugins/CssAstPlugin';
 import { HtmlPlugin } from './plugins/HtmlPlugin';
-import { StructureAstPlugin } from './plugins/StructureAstPlugin';
 import { StructurePlugin } from './plugins/StructurePlugin';
 
 export type Pipeline<T, S, B extends keyof BuilderMap<T, S>> = CommonPipeline<
@@ -12,7 +11,7 @@ export type Pipeline<T, S, B extends keyof BuilderMap<T, S>> = CommonPipeline<
 
 export interface CommonPipeline<T, S> {
     structure: {
-        plugins: Array<StructurePlugin<T, S> | StructureAstPlugin<T, S>>;
+        plugins: Array<StructurePlugin<T, S>>;
     };
 }
 

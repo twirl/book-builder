@@ -1,12 +1,13 @@
-import escapeHtml from 'escape-html';
 import { Root } from 'hast';
 
 import { Chapter } from '../models/Chapter';
 import { Context } from '../models/Context';
 import { CssClasses } from '../models/CssClasses';
 import { Strings } from '../models/Strings';
+import { HtmlString } from '../models/Types';
 import { Section, Structure } from '../structure/Structure';
 import { astToHtml } from '../util/astToHtml';
+import { escapeHtml } from '../util/escapeHtml';
 import { kebabCase } from '../util/strings';
 
 export class DefaultTemplates<
@@ -21,12 +22,12 @@ export class DefaultTemplates<
         protected readonly cssClasses: Partial<C> = {}
     ) {}
 
-    protected htmlString(c: keyof S) {
+    protected string(c: keyof S): HtmlString {
         return escapeHtml(String(this.strings[c]));
     }
 
-    protected htmlHref(href: string) {
-        return `href="${escapeHtml(href)}"`;
+    protected href(href: string) {
+        return `href="${escapeHtml(href)}"` as HtmlString;
     }
 
     protected cssClass(c: keyof C) {
@@ -34,7 +35,7 @@ export class DefaultTemplates<
             typeof this.cssClasses[c] === 'string'
                 ? this.cssClasses[c]
                 : kebabCase(c.toString())
-        )}"`;
+        )}"` as HtmlString;
     }
 
     public jointTitle(titles: string[]) {
@@ -53,34 +54,31 @@ export class DefaultTemplates<
         return title;
     }
 
-    public async htmlDocument(
-        structure: Structure,
-        css: string
-    ): Promise<string> {
+    public async htmlDocument(structure: Structure, css: string) {
         return `<!doctype html><html lang="${
             this.locale
         }"><head>${await this.htmlHead(css)}</head><body>${await this.htmlBody(
             await this.htmlStructure(structure)
-        )}</body></html>`;
+        )}</body></html>` as HtmlString;
     }
 
     public async htmlHead(css: string) {
         return `<meta charset="utf-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>${this.htmlString('author')}. ${this.htmlString('title')}</title>
-        <meta name="author" content="${this.htmlString('author')}"/>
-        <meta name="description" content="${this.htmlString('description')}"/>
-        <meta property="og:title" content="${this.htmlString('author')}. ${this.htmlString('title')}"/>
-        <meta property="og:url" content="${this.htmlString('landingUrl')}"/>
+        <title>${this.string('author')}. ${this.string('title')}</title>
+        <meta name="author" content="${this.string('author')}"/>
+        <meta name="description" content="${this.string('description')}"/>
+        <meta property="og:title" content="${this.string('author')}. ${this.string('title')}"/>
+        <meta property="og:url" content="${this.string('landingUrl')}"/>
         <meta property="og:type" content="article"/>
-        <meta property="og:description" content="${this.htmlString('description')}"/>
+        <meta property="og:description" content="${this.string('description')}"/>
         <meta property="og:locale" content="${escapeHtml(this.locale)}"/>
-        <link rel="icon" ${this.htmlHref(this.strings.favicon)}/>
-        <style>${css}</style>`;
+        <link rel="icon" ${this.href(this.strings.favicon)}/>
+        <style>${css}</style>` as HtmlString;
     }
 
     public async htmlBody(body: string) {
-        return `<article>${body}</article>`;
+        return `<article>${body}</article>` as HtmlString;
     }
 
     public async htmlStructure(structure: Structure) {
@@ -88,25 +86,25 @@ export class DefaultTemplates<
         for (const section of structure.getSections()) {
             htmlParts.push(await this.htmlSection(section));
         }
-        return htmlParts.join(await this.htmlPageBreak());
+        return htmlParts.join(await this.htmlPageBreak()) as HtmlString;
     }
 
     public async htmlTableOfContents(structure: Structure) {
-        return `<nav><h2>${this.htmlString(
+        return `<nav><h2>${this.string(
             'toc'
         )}</h2><ul ${this.cssClass('tableOfContents')}>${structure
             .getSections()
             .reduce((sectionHtml: string[], section) => {
                 if (section.inTableOfContents()) {
                     sectionHtml.push(
-                        `<li><a ${this.htmlHref('#' + section.anchor)}>${escapeHtml(
+                        `<li><a ${this.href('#' + section.anchor)}>${escapeHtml(
                             this.sectionTitle(section)
                         )}</a>${
                             section.getChapters().length
                                 ? `<ul>${section
                                       .getChapters()
                                       .map((chapter) => {
-                                          return `<li><a ${this.htmlHref(
+                                          return `<li><a ${this.href(
                                               '#' + chapter.anchor
                                           )}>${escapeHtml(
                                               this.chapterTitle(chapter)
@@ -119,7 +117,7 @@ export class DefaultTemplates<
                 }
                 return sectionHtml;
             }, [])
-            .join('')}</ul></nav>`;
+            .join('')}</ul></nav>` as HtmlString;
     }
 
     public async htmlSection(section: Section) {
@@ -137,20 +135,22 @@ export class DefaultTemplates<
                 await this.htmlPageBreak()
             );
         }
-        return htmlParts.join('');
+        return htmlParts.join('') as HtmlString;
     }
 
     public async htmlSectionTitle(section: Section) {
-        return section.title
-            ? `<h2>${
-                  section.anchor
-                      ? await this.htmlAnchor(
-                            this.sectionTitle(section),
-                            section.anchor
-                        )
-                      : this.sectionTitle(section)
-              }</h2>`
-            : '';
+        return (
+            section.title
+                ? `<h2>${
+                      section.anchor
+                          ? await this.htmlAnchor(
+                                this.sectionTitle(section),
+                                section.anchor
+                            )
+                          : this.sectionTitle(section)
+                  }</h2>`
+                : ''
+        ) as HtmlString;
     }
 
     public async htmlSectionContent(content: Root) {
@@ -160,14 +160,14 @@ export class DefaultTemplates<
     public async htmlChapter(chapter: Chapter) {
         return `${await this.htmlChapterTitle(chapter)}${await this.htmlChapterContent(
             chapter.content
-        )}`;
+        )}` as HtmlString;
     }
 
     public async htmlChapterTitle(chapter: Chapter) {
         return `<h3>${await this.htmlAnchor(
             this.chapterTitle(chapter),
             chapter.anchor
-        )}</h3>`;
+        )}</h3>` as HtmlString;
     }
 
     public async htmlChapterContent(content: Root) {
@@ -179,17 +179,17 @@ export class DefaultTemplates<
             anchor
         )}" id="${escapeHtml(anchor)}" href="#${escapeHtml(
             anchor
-        )}">${escapeHtml(text)}</a>`;
+        )}">${escapeHtml(text)}</a>` as HtmlString;
     }
 
     public async htmlAImg(params: aImgParams) {
         return `<div ${this.cssClass('imgWrapper')}>${await this.htmlAImgImage(
             params
-        )}${await this.htmlAImgTitle(params)}</div>`;
+        )}${await this.htmlAImgTitle(params)}</div>` as HtmlString;
     }
 
     public async htmlAImgTitle(params: aImgParams) {
-        return `<h6>${escapeHtml(this.imageTitle(params))}</h6>`;
+        return `<h6>${escapeHtml(this.imageTitle(params))}</h6>` as HtmlString;
     }
 
     public async htmlAImgImage(params: aImgParams) {
@@ -198,15 +198,32 @@ export class DefaultTemplates<
             params.src
         )}" alt="${fullTitle}" title="${fullTitle}"${
             params.size ? ` class="${params.size}"` : ''
-        }/>`;
+        }/>` as HtmlString;
+    }
+
+    public async htmlH5Counter(
+        counter: number,
+        iteration: number,
+        content: string,
+        chapter: Chapter,
+        section: Section
+    ) {
+        return `<h5>${await this.htmlAnchor(
+            `${counter}. ${content}`,
+            `${chapter.anchor}:${counter}${
+                iteration > 1 ? ':' + iteration : ''
+            }`
+        )}</h5>` as HtmlString;
     }
 
     public async htmlPageBreak() {
-        return `<div ${this.cssClass('pageBreak')}></div>`;
+        return `<div ${this.cssClass('pageBreak')}></div>` as HtmlString;
     }
 
     public async htmlCode(html: string, language: string) {
-        return `<pre><code data-language="${escapeHtml(language)}">${html}</code></pre>`;
+        return `<pre><code data-language="${escapeHtml(
+            language
+        )}">${html}</code></pre>` as HtmlString;
     }
 }
 
