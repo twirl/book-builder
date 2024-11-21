@@ -6,4 +6,6 @@ export interface Strings {
     landingUrl: string;
     chapterTitle: string;
     toc: string;
+    references: string;
+    ibid: string;
 }

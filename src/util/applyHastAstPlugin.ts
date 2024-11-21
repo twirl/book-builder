@@ -7,7 +7,7 @@ export const applyHastPluginToAst = async <T>(
     ast: Root,
     plugin: AstPlugin<T, ElementContent>,
     state: T
-): Promise<void> => {
+): Promise<AstPluginRunner<T, ElementContent>> => {
     const runner = await plugin.init(state);
     const updatedChildren: RootContent[] = [];
     for (const node of ast.children) {
@@ -19,6 +19,7 @@ export const applyHastPluginToAst = async <T>(
     }
     ast.children = updatedChildren;
     await runner.finish(state);
+    return runner;
 };
 
 export const applyPluginToNode = async <State>(

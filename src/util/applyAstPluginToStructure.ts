@@ -3,6 +3,7 @@ import { Context } from '../models/Context';
 import { L10n } from '../models/L10n';
 import {
     StructureAstPlugin,
+    StructureAstPluginRunner,
     StructureAstState
 } from '../models/plugins/StructureAstPlugin';
 import { StructurePlugin } from '../models/plugins/StructurePlugin';
@@ -32,9 +33,13 @@ export const applyAstPluginToStructure = async <T, S>(
                 chapter,
                 section
             };
-            await applyHastPluginToAst(chapter.content, plugin, state);
+            const runner = await applyHastPluginToAst(
+                chapter.content,
+                plugin,
+                state
+            );
             if (onChapterEnd) {
-                await onChapterEnd(state, chapter, section);
+                await onChapterEnd(runner, state, chapter, section);
             }
         }
         if (onSectionEnd) {
@@ -52,6 +57,7 @@ export interface StructureHooks<T, S> {
     onSectionBegin: (section: Section) => Promise<void>;
     onSectionEnd: (section: Section) => Promise<void>;
     onChapterEnd: (
+        runner: StructureAstPluginRunner<T, S>,
         state: StructureAstState<T, S>,
         chapter: Chapter,
         section: Section

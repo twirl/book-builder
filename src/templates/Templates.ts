@@ -3,11 +3,13 @@ import { Root } from 'hast';
 import { Chapter } from '../models/Chapter';
 import { Context } from '../models/Context';
 import { CssClasses } from '../models/CssClasses';
+import { Bibliography, BibliographyItem, Reference } from '../models/Reference';
 import { Strings } from '../models/Strings';
-import { HtmlString } from '../models/Types';
+import { Href, HtmlString } from '../models/Types';
 import { Section, Structure } from '../structure/Structure';
 import { astToHtml } from '../util/astToHtml';
 import { escapeHtml } from '../util/escapeHtml';
+import { getEntityAnchor } from '../util/getEntityName';
 import { kebabCase } from '../util/strings';
 
 export class DefaultTemplates<
@@ -52,6 +54,30 @@ export class DefaultTemplates<
 
     public imageTitle({ title }: aImgParams) {
         return title;
+    }
+
+    public referenceAnchor(
+        ref: Reference,
+        chapter: Chapter,
+        _section: Section
+    ) {
+        return `${chapter.anchor}-ref-${ref.counter}`;
+    }
+
+    public referenceBackAnchor(
+        ref: Reference,
+        chapter: Chapter,
+        _section: Section
+    ) {
+        return `${chapter.anchor}-ref-${ref.counter}-back`;
+    }
+
+    public linkText(href: Href): string {
+        return href.replace(/^[\w\+]+\:\/\//, '');
+    }
+
+    public bibliographyItemAnchor(bibliographyItem: BibliographyItem) {
+        return `bibliography-${getEntityAnchor(bibliographyItem.alias)}`;
     }
 
     public async htmlDocument(structure: Structure, css: string) {
@@ -206,7 +232,7 @@ export class DefaultTemplates<
         iteration: number,
         content: string,
         chapter: Chapter,
-        section: Section
+        _section: Section
     ) {
         return `<h5>${await this.htmlAnchor(
             `${counter}. ${content}`,
@@ -214,6 +240,123 @@ export class DefaultTemplates<
                 iteration > 1 ? ':' + iteration : ''
             }`
         )}</h5>` as HtmlString;
+    }
+
+    public async htmlInPlaceReference(
+        ref: Reference,
+        chapter: Chapter,
+        section: Section
+    ) {
+        const anchor = escapeHtml(
+            this.referenceBackAnchor(ref, chapter, section)
+        );
+        return `<sup ${this.cssClass(
+            'inPlaceReference'
+        )}><a name="${anchor}" id="${anchor}" href="#${escapeHtml(
+            this.referenceAnchor(ref, chapter, section)
+        )}">${ref.counter}</a></sup>` as HtmlString;
+    }
+
+    public async htmlChapterReferences(
+        refs: Reference[],
+        chapter: Chapter,
+        section: Section,
+        bibliography?: Bibliography
+    ) {
+        const refValues: HtmlString[] = [];
+        for (let i = 0; i < refs.length; i++) {
+            refValues.push(
+                await this.htmlReference(
+                    refs[i],
+                    i > 0 ? refs[i - 1] : null,
+                    chapter,
+                    section,
+                    bibliography
+                )
+            );
+        }
+        return `<h4>${this.string('references')}</h4><ul ${this.cssClass(
+            'references'
+        )}>${refValues.map((v) => `<li>${v}</li>`).join('')}</ul>` as HtmlString;
+    }
+
+    public async htmlReference(
+        ref: Reference,
+        prevRef: Reference | null,
+        chapter: Chapter,
+        section: Section,
+        bibliography?: Bibliography
+    ) {
+        // <p>
+        // <a href="#ref-chapter-19-no-19-back" class="back-anchor" id="ref-chapter-19-no-19"><sup>1</sup>&nbsp;</a>
+        // <span>Token Bucket<br>
+        // <a target="_blank" class="external" href="https://en.wikipedia.org/wiki/Token_bucket">https://en.wikipedia.org/wiki/Token_bucket</a></span></p>
+        const anchor = escapeHtml(this.referenceAnchor(ref, chapter, section));
+        const link = await this.htmlReferenceLink(ref);
+        return `<p><a ${this.cssClass('backAnchor')} href="#${escapeHtml(
+            this.referenceBackAnchor(ref, chapter, section)
+        )}" name="${anchor}" id="${anchor}"><sup>${
+            ref.counter
+        }</sup>&nbsp;</a><span>${await this.htmlReferenceText(
+            ref,
+            prevRef,
+            bibliography
+        )}${link ? '<br/>' + link : ''}</span>` as HtmlString;
+    }
+
+    public async htmlReferenceLink(ref: Reference): Promise<HtmlString | null> {
+        return ref.href
+            ? (`<a target="_blank" ${this.cssClass('externalLink')} href="${escapeHtml(
+                  ref.href
+              )}">${this.linkText(ref.href)}</a>` as HtmlString)
+            : null;
+    }
+
+    public async htmlReferenceText(
+        ref: Reference,
+        prevRef: Reference | null,
+        bibliography?: Bibliography
+    ) {
+        if (ref.bibliographyItemAlias) {
+            if (bibliography && bibliography[ref.bibliographyItemAlias]) {
+                return this.htmlReferenceBibliographyItem(
+                    ref,
+                    prevRef,
+                    bibliography[ref.bibliographyItemAlias]
+                );
+            } else {
+                this.context.logger.error(
+                    'Cannot find a bibliography item',
+                    ref
+                );
+                return '[ERROR]' as HtmlString;
+            }
+        } else {
+            return ref.text as HtmlString;
+        }
+    }
+
+    public async htmlReferenceBibliographyItem(
+        ref: Reference,
+        prevRef: Reference | null,
+        bibliographyItem: BibliographyItem
+    ) {
+        if (
+            prevRef &&
+            prevRef.bibliographyItemAlias === ref.bibliographyItemAlias
+        ) {
+            return `${this.string('ibid')}, ${ref.text}` as HtmlString;
+        } else {
+            return `<a ${this.cssClass(
+                'refToBibliography'
+            )} href="#${this.bibliographyItemAnchor(bibliographyItem)}">${
+                bibliographyItem.authors
+            }${
+                bibliographyItem.publicationDate
+                    ? ' (' + bibliographyItem.publicationDate + ')'
+                    : ''
+            }</a>, ${ref.text}` as HtmlString;
+        }
     }
 
     public async htmlPageBreak() {

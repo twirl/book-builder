@@ -3,3 +3,5 @@ export type OpaqueString<T extends string> = string & {
 };
 
 export type HtmlString = OpaqueString<'html'>;
+
+export type Href = OpaqueString<'href'>;

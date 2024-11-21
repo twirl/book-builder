@@ -1,7 +1,12 @@
 export interface CssClasses {
     anchorLink: string;
-    pageBreak: string;
-    tableOfContents: string;
     imprintPage: string;
     imgWrapper: string;
+    inPlaceReference: string;
+    pageBreak: string;
+    tableOfContents: string;
+    references: string;
+    backAnchor: string;
+    externalLink: string;
+    refToBibliography: string;
 }

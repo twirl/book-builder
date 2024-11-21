@@ -1,12 +1,17 @@
 import { ElementContent } from 'hast';
 
 import { Section } from '../../structure/Structure';
-import { AstPlugin } from '../AstPlugin';
+import { AstPlugin, AstPluginRunner } from '../AstPlugin';
 import { Chapter } from '../Chapter';
 import { Context } from '../Context';
 import { L10n } from '../L10n';
 
 export type StructureAstPlugin<T, S> = AstPlugin<
+    StructureAstState<T, S>,
+    ElementContent
+>;
+
+export type StructureAstPluginRunner<T, S> = AstPluginRunner<
     StructureAstState<T, S>,
     ElementContent
 >;
