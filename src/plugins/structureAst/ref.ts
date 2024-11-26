@@ -27,7 +27,7 @@ export class RefAstPluginRunner<T, S> {
         private readonly options: RefAstPluginOptions
     ) {
         this.matchRe = new RegExp(
-            `^${this.options.prefix}(?::(?<alias>[\\w-_]+))?\\s+(?<text>.+)$`
+            `^${this.options.prefix}(?::(?<alias>[\\w-_]+))?(?:\\s+(?<text>.+))?$`
         );
         this.counter = options.continueCountFrom ?? 1;
     }
@@ -38,7 +38,7 @@ export class RefAstPluginRunner<T, S> {
             const content = node.children[0];
             if (content?.type === 'text') {
                 const match = content.value.match(this.matchRe);
-                if (match && match.groups?.text) {
+                if (match && match.groups) {
                     const alias = match.groups.alias;
                     const ref = {
                         bibliographyItemAlias: alias

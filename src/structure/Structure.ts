@@ -9,9 +9,10 @@ import { getSectionWithChaptersFromParameters } from './helpers/getSectionWithCh
 
 export class Structure {
     private sections: Section[] = [];
-    constructor() {}
+    constructor(private readonly counters: Counters) {}
 
     public appendSection(section: Section) {
+        section.setCounter(this.counters.getSectionCountIncremented());
         this.sections.push(section);
     }
 
@@ -28,8 +29,8 @@ export const getStructure = async (
     source: Source,
     context: Context
 ): Promise<Structure> => {
-    const structure = new Structure();
     const counters = new Counters();
+    const structure = new Structure(counters);
 
     const sectionParameters = await getSectionParametersFromSource(
         source,
@@ -55,7 +56,7 @@ export class Section {
     constructor(
         public readonly title?: string,
         public readonly anchor?: string,
-        public readonly counter?: number,
+        private counter?: number,
         private content?: Root,
         private skipTableOfContents = false
     ) {}
@@ -82,5 +83,13 @@ export class Section {
 
     public inTableOfContents() {
         return !this.skipTableOfContents;
+    }
+
+    public getCounter() {
+        return this.counter;
+    }
+
+    public setCounter(counter?: number) {
+        this.counter = counter;
     }
 }

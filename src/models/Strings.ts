@@ -8,4 +8,5 @@ export interface Strings {
     toc: string;
     references: string;
     ibid: string;
+    bibliography: string;
 }

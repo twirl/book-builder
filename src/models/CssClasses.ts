@@ -9,4 +9,5 @@ export interface CssClasses {
     backAnchor: string;
     externalLink: string;
     refToBibliography: string;
+    bibliography: string;
 }

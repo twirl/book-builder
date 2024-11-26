@@ -86,7 +86,6 @@ export class Cache {
             return cachedContent;
         } else {
             const json = await fallback();
-            debugger;
             await this.put(key, Buffer.from(JSON.stringify(json, null, 4)));
             return json;
         }

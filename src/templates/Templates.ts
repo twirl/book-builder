@@ -3,7 +3,12 @@ import { Root } from 'hast';
 import { Chapter } from '../models/Chapter';
 import { Context } from '../models/Context';
 import { CssClasses } from '../models/CssClasses';
-import { Bibliography, BibliographyItem, Reference } from '../models/Reference';
+import {
+    Bibliography,
+    BibliographyItem,
+    BibliographyItemAlias,
+    Reference
+} from '../models/Reference';
 import { Strings } from '../models/Strings';
 import { Href, HtmlString } from '../models/Types';
 import { Section, Structure } from '../structure/Structure';
@@ -52,7 +57,7 @@ export class DefaultTemplates<
         return `${this.strings.chapterTitle} ${chapter.counter}. ${chapter.title}`;
     }
 
-    public imageTitle({ title }: aImgParams) {
+    public imageTitle({ title }: AImgParams) {
         return title;
     }
 
@@ -76,8 +81,19 @@ export class DefaultTemplates<
         return href.replace(/^[\w\+]+\:\/\//, '');
     }
 
-    public bibliographyItemAnchor(bibliographyItem: BibliographyItem) {
-        return `bibliography-${getEntityAnchor(bibliographyItem.alias)}`;
+    public bibliographyItemAnchor(
+        alias: BibliographyItemAlias,
+        item: BibliographyItem
+    ) {
+        return `bibliography-${getEntityAnchor(alias)}`;
+    }
+
+    public bibliographyItemShortName(bibliographyItem: BibliographyItem) {
+        return `${bibliographyItem.authors}${
+            bibliographyItem.publicationDate
+                ? ' (' + bibliographyItem.publicationDate + ')'
+                : ''
+        }`;
     }
 
     public async htmlDocument(structure: Structure, css: string) {
@@ -208,17 +224,17 @@ export class DefaultTemplates<
         )}">${escapeHtml(text)}</a>` as HtmlString;
     }
 
-    public async htmlAImg(params: aImgParams) {
+    public async htmlAImg(params: AImgParams) {
         return `<div ${this.cssClass('imgWrapper')}>${await this.htmlAImgImage(
             params
         )}${await this.htmlAImgTitle(params)}</div>` as HtmlString;
     }
 
-    public async htmlAImgTitle(params: aImgParams) {
+    public async htmlAImgTitle(params: AImgParams) {
         return `<h6>${escapeHtml(this.imageTitle(params))}</h6>` as HtmlString;
     }
 
-    public async htmlAImgImage(params: aImgParams) {
+    public async htmlAImgImage(params: AImgParams) {
         const fullTitle = this.imageTitle(params);
         return `<img src="${escapeHtml(
             params.src
@@ -257,6 +273,12 @@ export class DefaultTemplates<
         )}">${ref.counter}</a></sup>` as HtmlString;
     }
 
+    public async htmlExternalLink(href: Href, text: HtmlString) {
+        return `<a target="_blank" ${this.cssClass('externalLink')} href="${escapeHtml(
+            href
+        )}">${text}</a>` as HtmlString;
+    }
+
     public async htmlChapterReferences(
         refs: Reference[],
         chapter: Chapter,
@@ -287,10 +309,6 @@ export class DefaultTemplates<
         section: Section,
         bibliography?: Bibliography
     ) {
-        // <p>
-        // <a href="#ref-chapter-19-no-19-back" class="back-anchor" id="ref-chapter-19-no-19"><sup>1</sup>&nbsp;</a>
-        // <span>Token Bucket<br>
-        // <a target="_blank" class="external" href="https://en.wikipedia.org/wiki/Token_bucket">https://en.wikipedia.org/wiki/Token_bucket</a></span></p>
         const anchor = escapeHtml(this.referenceAnchor(ref, chapter, section));
         const link = await this.htmlReferenceLink(ref);
         return `<p><a ${this.cssClass('backAnchor')} href="#${escapeHtml(
@@ -306,9 +324,10 @@ export class DefaultTemplates<
 
     public async htmlReferenceLink(ref: Reference): Promise<HtmlString | null> {
         return ref.href
-            ? (`<a target="_blank" ${this.cssClass('externalLink')} href="${escapeHtml(
-                  ref.href
-              )}">${this.linkText(ref.href)}</a>` as HtmlString)
+            ? await this.htmlExternalLink(
+                  ref.href,
+                  escapeHtml(this.linkText(ref.href))
+              )
             : null;
     }
 
@@ -322,6 +341,7 @@ export class DefaultTemplates<
                 return this.htmlReferenceBibliographyItem(
                     ref,
                     prevRef,
+                    ref.bibliographyItemAlias,
                     bibliography[ref.bibliographyItemAlias]
                 );
             } else {
@@ -339,23 +359,24 @@ export class DefaultTemplates<
     public async htmlReferenceBibliographyItem(
         ref: Reference,
         prevRef: Reference | null,
-        bibliographyItem: BibliographyItem
+        alias: BibliographyItemAlias,
+        item: BibliographyItem
     ) {
         if (
             prevRef &&
             prevRef.bibliographyItemAlias === ref.bibliographyItemAlias
         ) {
-            return `${this.string('ibid')}, ${ref.text}` as HtmlString;
+            return `${this.string('ibid')}${ref.text ? ', ' + escapeHtml(ref.text) : ''}` as HtmlString;
         } else {
             return `<a ${this.cssClass(
                 'refToBibliography'
-            )} href="#${this.bibliographyItemAnchor(bibliographyItem)}">${
-                bibliographyItem.authors
-            }${
-                bibliographyItem.publicationDate
-                    ? ' (' + bibliographyItem.publicationDate + ')'
-                    : ''
-            }</a>, ${ref.text}` as HtmlString;
+            )} href="#${this.bibliographyItemAnchor(alias, item)}">${this.bibliographyItemShortName(
+                item
+            )}</a>${
+                ref.text
+                    ? ', ' + escapeHtml(ref.text)
+                    : ' ' + (await this.htmlBibliographyItemTitle(item))
+            }` as HtmlString;
         }
     }
 
@@ -368,11 +389,87 @@ export class DefaultTemplates<
             language
         )}">${html}</code></pre>` as HtmlString;
     }
+
+    public async htmlBibliography(bibliography: Bibliography) {
+        const items = Object.entries(bibliography)
+            .map(([alias, item]) => ({
+                title: this.bibliographyItemShortName(item),
+                item,
+                alias: alias as BibliographyItemAlias
+            }))
+            .sort((a, b) => (a.title < b.title ? -1 : 1));
+        const htmlParts: HtmlString[] = [];
+        for (const { item, alias } of items) {
+            htmlParts.push(await this.htmlBibliographyItem(alias, item));
+        }
+        return `<ul ${this.cssClass('bibliography')}>${htmlParts
+            .map((i) => `<li>${i}</li>`)
+            .join('')}</ul>`;
+    }
+
+    public async htmlBibliographyItem(
+        alias: BibliographyItemAlias,
+        item: BibliographyItem
+    ) {
+        const anchor = escapeHtml(this.bibliographyItemAnchor(alias, item));
+        return `<p><a name="${anchor}" id="${anchor}">${await this.htmlBibliographyItemFullName(
+            item
+        )}</a>${
+            item.hrefs && item.hrefs.length
+                ? '<br/>' + (await this.htmlBibliographyHrefs(item.hrefs))
+                : ''
+        }</p>` as HtmlString;
+    }
+
+    public async htmlBibliographyHrefs(hrefs: Href[]): Promise<HtmlString> {
+        const htmlParts: HtmlString[] = [];
+        for (const href of hrefs) {
+            const match = href.trim().match(/^\w+\:/);
+            const scheme = match ? match[0] : 'unknown:';
+            switch (scheme) {
+                case 'http:':
+                case 'https:':
+                    htmlParts.push(
+                        await this.htmlExternalLink(
+                            href,
+                            escapeHtml(this.linkText(href))
+                        )
+                    );
+                    break;
+                case 'isbn:':
+                    htmlParts.push(
+                        `ISBN ${escapeHtml(href.slice(5))}` as HtmlString
+                    );
+                    break;
+                default:
+                    this.context.logger.error(
+                        'Cannot resolve hyperlink scheme',
+                        href
+                    );
+                    htmlParts.push(escapeHtml(href));
+            }
+        }
+        return htmlParts.join('<br/>') as HtmlString;
+    }
+
+    public async htmlBibliographyItemFullName(item: BibliographyItem) {
+        return `${escapeHtml(
+            this.bibliographyItemShortName(item)
+        )} ${await this.htmlBibliographyItemTitle(item)}` as HtmlString;
+    }
+
+    public async htmlBibliographyItemTitle(item: BibliographyItem) {
+        const titleParts = [item.title, ...(item.subtitle ?? [])].map(
+            (part, index) =>
+                index % 2 ? escapeHtml(part) : `<em>${escapeHtml(part)}</em>`
+        );
+        return titleParts.join('. ') as HtmlString;
+    }
 }
 
-export interface aImgParams {
+export interface AImgParams {
     src: string;
-    href: string;
+    href: Href;
     title: string;
     alt: string;
     size?: string;
