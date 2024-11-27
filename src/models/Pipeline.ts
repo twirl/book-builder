@@ -1,5 +1,6 @@
 import { BuilderMap } from '../builders';
 import { CssAstPlugin } from './plugins/CssAstPlugin';
+import { EpubPlugin } from './plugins/EpubPlugin';
 import { HtmlPlugin } from './plugins/HtmlPlugin';
 import { StructurePlugin } from './plugins/StructurePlugin';
 
@@ -19,6 +20,14 @@ export interface PipelineMap<T, S> {
     html: {
         html: {
             plugins: Array<HtmlPlugin>;
+        };
+        css: {
+            plugins: Array<CssAstPlugin<T, S>>;
+        };
+    };
+    epub: {
+        epub: {
+            plugins: Array<EpubPlugin>;
         };
         css: {
             plugins: Array<CssAstPlugin<T, S>>;

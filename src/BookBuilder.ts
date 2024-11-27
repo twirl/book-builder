@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import datauri from 'datauri';
 
 import { BuilderMap, BuilderOptionsMap } from './builders';
+import { epubBuilder } from './builders/epub/EpubBuilder';
 import { htmlBuilder } from './builders/html/HtmlBuilder';
 import { Cache } from './Cache';
 import { BuilderState } from './models/Builder';
@@ -48,7 +49,20 @@ export class BookBuilder {
 
         switch (target) {
             case 'html':
-                await htmlBuilder(this.structure, state, pipeline, options);
+                await htmlBuilder(
+                    this.structure,
+                    state,
+                    pipeline as Pipeline<T, S, 'html'>,
+                    options
+                );
+                break;
+            case 'epub':
+                await epubBuilder(
+                    this.structure,
+                    state,
+                    pipeline as Pipeline<T, S, 'epub'>,
+                    options
+                );
                 break;
             default:
                 this.context.logger.error('Unknown target', target);

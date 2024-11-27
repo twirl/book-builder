@@ -3,11 +3,11 @@ import { htmlToAst } from '../../preprocessors/html';
 import { Section, Structure } from '../../structure/Structure';
 
 export const imprintPages =
-    (html: string) =>
+    (html: string, anchor: string) =>
     async <T, S>(structure: Structure, state: StructurePluginState<T, S>) => {
         structure.prependSection(
             new Section(
-                undefined,
+                anchor,
                 undefined,
                 undefined,
                 await htmlToAst(html),

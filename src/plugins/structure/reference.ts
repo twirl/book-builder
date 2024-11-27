@@ -10,7 +10,8 @@ export const reference =
     ({
         refPrefix = 'ref',
         bibliography = {},
-        anchor = 'bibliography'
+        anchor = 'bibliography',
+        prependPath
     }: Partial<ReferencePluginOptions> = {}) =>
     async <T, S extends Strings = Strings>(
         structure: Structure,
@@ -31,7 +32,8 @@ export const reference =
                                     refs,
                                     chapter,
                                     section,
-                                    bibliography
+                                    bibliography,
+                                    prependPath
                                 )
                             ))
                         );
@@ -40,7 +42,7 @@ export const reference =
             }
         );
         structure.appendSection(
-            new Section(state.l10n.strings.bibliography, anchor, undefined, {
+            new Section(anchor, state.l10n.strings.bibliography, undefined, {
                 type: 'root',
                 children: await htmlToAstElements(
                     await state.l10n.templates.htmlBibliography(bibliography)
@@ -53,4 +55,5 @@ export interface ReferencePluginOptions {
     refPrefix: string;
     bibliography?: Bibliography;
     anchor?: string;
+    prependPath?: string;
 }

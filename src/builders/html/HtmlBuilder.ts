@@ -1,11 +1,13 @@
 import { writeFile } from 'node:fs/promises';
 
-import { Builder, BuilderState } from '../../models/Builder';
+import { BuilderState } from '../../models/Builder';
+import {
+    HtmlBuilder,
+    HtmlBuilderOptions
+} from '../../models/builders/HtmlBuilder';
 import { Pipeline } from '../../models/Pipeline';
 import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
-
-export type HtmlBuilder<T, S> = Builder<T, S, HtmlBuilderOptions, 'html'>;
 
 export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
     structure: Structure,
@@ -27,8 +29,3 @@ export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
 
     await writeFile(options.outFile, html);
 };
-
-export interface HtmlBuilderOptions {
-    css: string;
-    outFile: string;
-}

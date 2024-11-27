@@ -1,6 +1,7 @@
 import { ConfigData, HtmlValidate, Message, RuleConfig } from 'html-validate';
 
 import { HtmlPlugin } from '../../models/plugins/HtmlPlugin';
+import { HtmlString } from '../../models/Types';
 
 export const DEFAULT_OPTIONS: ConfigData = {
     extends: ['html-validate:document'],
@@ -33,9 +34,8 @@ export const validator = (rules: RuleConfig = {}): HtmlPlugin => {
         } catch (error) {
             context.logger.error('Cannot validate HTML', error);
         }
-        return html;
+        return html as HtmlString;
     };
-    callback.type = 'html_plugin';
 
     return callback;
 };

@@ -83,7 +83,7 @@ export class DefaultTemplates<
 
     public bibliographyItemAnchor(
         alias: BibliographyItemAlias,
-        item: BibliographyItem
+        _item: BibliographyItem
     ) {
         return `bibliography-${getEntityAnchor(alias)}`;
     }
@@ -94,6 +94,14 @@ export class DefaultTemplates<
                 ? ' (' + bibliographyItem.publicationDate + ')'
                 : ''
         }`;
+    }
+
+    public epubSectionFilename(section: Section) {
+        return section.anchor + '.xhtml';
+    }
+
+    public epubChapterFilename(chapter: Chapter) {
+        return chapter.anchor + '.xhtml';
     }
 
     public async htmlDocument(structure: Structure, css: string) {
@@ -283,7 +291,8 @@ export class DefaultTemplates<
         refs: Reference[],
         chapter: Chapter,
         section: Section,
-        bibliography?: Bibliography
+        bibliography?: Bibliography,
+        prependPath?: string
     ) {
         const refValues: HtmlString[] = [];
         for (let i = 0; i < refs.length; i++) {
@@ -293,7 +302,8 @@ export class DefaultTemplates<
                     i > 0 ? refs[i - 1] : null,
                     chapter,
                     section,
-                    bibliography
+                    bibliography,
+                    prependPath
                 )
             );
         }
@@ -307,11 +317,14 @@ export class DefaultTemplates<
         prevRef: Reference | null,
         chapter: Chapter,
         section: Section,
-        bibliography?: Bibliography
+        bibliography?: Bibliography,
+        prependPath: string = ''
     ) {
         const anchor = escapeHtml(this.referenceAnchor(ref, chapter, section));
         const link = await this.htmlReferenceLink(ref);
-        return `<p><a ${this.cssClass('backAnchor')} href="#${escapeHtml(
+        return `<p><a ${this.cssClass('backAnchor')} href="${escapeHtml(
+            prependPath
+        )}#${escapeHtml(
             this.referenceBackAnchor(ref, chapter, section)
         )}" name="${anchor}" id="${anchor}"><sup>${
             ref.counter
@@ -464,6 +477,19 @@ export class DefaultTemplates<
                 index % 2 ? escapeHtml(part) : `<em>${escapeHtml(part)}</em>`
         );
         return titleParts.join('. ') as HtmlString;
+    }
+
+    public async htmlEpubSectionContent(section: Section) {
+        const content = section.getContent();
+        return this.htmlEpubDocument(content);
+    }
+
+    public async htmlEpubChapterContent(chapter: Chapter, _section: Section) {
+        return this.htmlEpubDocument(chapter.content);
+    }
+
+    public async htmlEpubDocument(root?: Root) {
+        return root ? astToHtml(root) : ('' as HtmlString);
     }
 }
 

@@ -54,8 +54,8 @@ export class Section {
     private chapters: Chapter[] = [];
 
     constructor(
+        public readonly anchor: string,
         public readonly title?: string,
-        public readonly anchor?: string,
         private counter?: number,
         private content?: Root,
         private skipTableOfContents = false

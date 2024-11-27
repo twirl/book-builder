@@ -22,8 +22,8 @@ export const getSectionWithChaptersFromParameters = async (
     }
 
     const section = new Section(
-        parameters.title,
         parameters.anchor,
+        parameters.title,
         counters.getSectionCountIncremented()
     );
     for (const { path, stat } of files.sort()) {

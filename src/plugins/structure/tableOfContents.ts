@@ -7,7 +7,7 @@ export const tableOfContents =
     async <T, S>(structure: Structure, state: StructurePluginState<T, S>) => {
         structure.prependSection(
             new Section(
-                undefined,
+                options.anchor ?? 'toc',
                 undefined,
                 undefined,
                 await htmlToAst(
@@ -19,4 +19,6 @@ export const tableOfContents =
         );
     };
 
-export interface TocOptions {}
+export interface TocOptions {
+    anchor?: string;
+}
