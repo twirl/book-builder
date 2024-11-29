@@ -225,9 +225,9 @@ export class DefaultTemplates<
     }
 
     public async htmlAnchor(text: string, anchor: string) {
-        return `<a ${this.cssClass('anchorLink')} name="${escapeHtml(
+        return `<a ${this.cssClass('anchorLink')} id="${escapeHtml(
             anchor
-        )}" id="${escapeHtml(anchor)}" href="#${escapeHtml(
+        )}" href="#${escapeHtml(
             anchor
         )}">${escapeHtml(text)}</a>` as HtmlString;
     }
@@ -260,8 +260,8 @@ export class DefaultTemplates<
     ) {
         return `<h5>${await this.htmlAnchor(
             `${counter}. ${content}`,
-            `${chapter.anchor}:${counter}${
-                iteration > 1 ? ':' + iteration : ''
+            `${chapter.anchor}-para-${counter}${
+                iteration > 1 ? '-' + iteration : ''
             }`
         )}</h5>` as HtmlString;
     }
@@ -276,7 +276,7 @@ export class DefaultTemplates<
         );
         return `<sup ${this.cssClass(
             'inPlaceReference'
-        )}><a name="${anchor}" id="${anchor}" href="#${escapeHtml(
+        )}><a id="${anchor}" href="#${escapeHtml(
             this.referenceAnchor(ref, chapter, section)
         )}">${ref.counter}</a></sup>` as HtmlString;
     }
@@ -326,7 +326,7 @@ export class DefaultTemplates<
             prependPath
         )}#${escapeHtml(
             this.referenceBackAnchor(ref, chapter, section)
-        )}" name="${anchor}" id="${anchor}"><sup>${
+        )}" id="${anchor}"><sup>${
             ref.counter
         }</sup>&nbsp;</a><span>${await this.htmlReferenceText(
             ref,
@@ -425,7 +425,7 @@ export class DefaultTemplates<
         item: BibliographyItem
     ) {
         const anchor = escapeHtml(this.bibliographyItemAnchor(alias, item));
-        return `<p><a name="${anchor}" id="${anchor}">${await this.htmlBibliographyItemFullName(
+        return `<p><a id="${anchor}">${await this.htmlBibliographyItemFullName(
             item
         )}</a>${
             item.hrefs && item.hrefs.length

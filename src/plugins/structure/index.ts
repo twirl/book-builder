@@ -1,4 +1,5 @@
 export { aImg } from './aImg';
+export { epubLink } from './epubLink';
 export { imgDataUri } from './imgDataUri';
 export { imgSrcToFileUrl } from './imgSrcToFileUrl';
 export { imprintPages } from './imprintPages';

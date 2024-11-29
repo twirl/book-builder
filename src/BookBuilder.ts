@@ -124,7 +124,7 @@ export const DEFAULT_OPTIONS: Options = {
 export class ConsoleLogger {
     constructor(private readonly options: Options) {}
     public debug(...args: any[]) {
-        if (this.options.logLevel >= LogLevel.DEBUG) {
+        if (this.options.logLevel <= LogLevel.DEBUG) {
             console.log(...args);
         }
     }
