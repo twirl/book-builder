@@ -2,7 +2,8 @@ import { StructurePluginState } from '../../models/plugins/StructurePlugin';
 import { Bibliography } from '../../models/Reference';
 import { Strings } from '../../models/Strings';
 import { htmlToAstElements } from '../../preprocessors/html';
-import { Section, Structure } from '../../structure/Structure';
+import { Section } from '../../structure/Section';
+import { Structure } from '../../structure/Structure';
 import { applyAstPluginToStructure } from '../../util/applyAstPluginToStructure';
 import { ref, RefAstPluginRunner } from '../structureAst/ref';
 

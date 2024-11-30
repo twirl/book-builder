@@ -12,7 +12,10 @@ export const hoistSingleChapters = <T, S>() => {
         for (const section of structure.getSections()) {
             const chapters = section.getChapters();
             if (chapters.length === 1) {
-                section.setContent(chapters[0].content);
+                section.setContent(
+                    chapters[0].content,
+                    chapters[0].modificationTimeMs
+                );
                 section.removeAllChapters();
             }
         }

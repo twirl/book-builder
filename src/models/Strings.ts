@@ -9,4 +9,5 @@ export interface Strings {
     references: string;
     ibid: string;
     bibliography: string;
+    coverImageUrl?: string;
 }

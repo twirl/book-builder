@@ -7,7 +7,8 @@ import {
     StructureAstState
 } from '../models/plugins/StructureAstPlugin';
 import { StructurePlugin } from '../models/plugins/StructurePlugin';
-import { Section, Structure } from '../structure/Structure';
+import { Section } from '../structure/Section';
+import { Structure } from '../structure/Structure';
 import { applyHastPluginToAst } from './applyHastAstPlugin';
 
 export const applyAstPluginToStructure = async <T, S>(

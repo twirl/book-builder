@@ -1,6 +1,7 @@
 import { StructurePluginState } from '../../models/plugins/StructurePlugin';
 import { htmlToAst } from '../../preprocessors/html';
-import { Section, Structure } from '../../structure/Structure';
+import { Section } from '../../structure/Section';
+import { Structure } from '../../structure/Structure';
 
 export const tableOfContents =
     (options: Partial<TocOptions> = {}) =>

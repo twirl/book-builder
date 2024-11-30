@@ -10,6 +10,8 @@
         "escape-html": "^1.0.3",
         "highlight.js": "^11.10.0",
         "html-validate": "^8.24.2",
+        "muhammara": "^5.2.0",
+        "puppeteer": "^23.9.0",
         "rehype-parse": "^9.0.1",
         "rehype-stringify": "^10.0.1",
         "remark-gfm": "^4.0.0",

@@ -1,6 +1,6 @@
 import { ElementContent } from 'hast';
 
-import { Section } from '../../structure/Structure';
+import { Section } from '../../structure/Section';
 import { AstPlugin, AstPluginRunner } from '../AstPlugin';
 import { Chapter } from '../Chapter';
 import { Context } from '../Context';

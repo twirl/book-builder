@@ -11,11 +11,12 @@ import {
 import { resolve } from 'path';
 
 import { Logger } from './models/Logger';
+import { CacheKey, Path } from './models/Types';
 
 export class Cache {
     constructor(
         private readonly logger: Logger,
-        private readonly dir: string,
+        private readonly dir: Path,
         private disabled = false,
         private purgeMode = false
     ) {
@@ -32,7 +33,7 @@ export class Cache {
 
     public static async init(
         logger: Logger,
-        dir: string,
+        dir: Path,
         disabled = false,
         purgeMode = false
     ): Promise<Cache> {
@@ -62,22 +63,23 @@ export class Cache {
     }
 
     public async getCachedOrPutToCache(
-        key: string,
+        key: CacheKey,
         dateMs: number,
-        fallback: () => Promise<Buffer>
+        fallback: () => Promise<Buffer>,
+        ext?: string
     ): Promise<Buffer> {
-        const cachedContent = await this.tryGet(key, dateMs);
+        const cachedContent = await this.getCached(key, dateMs);
         if (cachedContent !== null) {
             return cachedContent;
         } else {
             const content = await fallback();
-            await this.put(this.keyToCachedFile(key), content);
+            await this.putToCache(key, content, ext);
             return content;
         }
     }
 
     public async getCachedJsonOrPutToCache<T>(
-        key: string,
+        key: CacheKey,
         dateMs: number,
         fallback: () => Promise<T>
     ): Promise<T> {
@@ -86,18 +88,25 @@ export class Cache {
             return cachedContent;
         } else {
             const json = await fallback();
-            await this.put(key, Buffer.from(JSON.stringify(json, null, 4)));
+            await this.putToCache(
+                key,
+                Buffer.from(JSON.stringify(json, null, 4))
+            );
             return json;
         }
     }
 
-    private async tryGet(key: string, dateMs: number): Promise<Buffer | null> {
+    public async getCached(
+        key: CacheKey,
+        dateMs: number,
+        ext?: string
+    ): Promise<Buffer | null> {
         if (this.disabled) {
             this.logger.debug('Cache is disabled', { key });
             return null;
         }
         try {
-            const fileName = this.keyToCachedFile(key);
+            const fileName = this.keyToCachedFile(key, ext);
             const stats = await stat(fileName);
 
             try {
@@ -118,10 +127,10 @@ export class Cache {
     }
 
     private async tryGetJson<T>(
-        path: string,
+        key: CacheKey,
         dateMs: number
     ): Promise<T | null> {
-        const content = await this.tryGet(path, dateMs);
+        const content = await this.getCached(key, dateMs);
         if (content === null) {
             return null;
         } else {
@@ -135,32 +144,38 @@ export class Cache {
         }
     }
 
-    private async put(key: string, data: any) {
+    public async putToCache(
+        key: CacheKey,
+        data: any,
+        ext?: string
+    ): Promise<Path | null> {
         if (!this.disabled) {
             try {
-                const fileName = this.keyToCachedFile(key);
+                const fileName = this.keyToCachedFile(key, ext);
                 await writeFile(fileName, Cache.toBuffer(data));
+                return fileName;
             } catch (e) {
                 this.logger.error('Cannot write cached data', e);
             }
         } else {
             this.logger.debug('Cache is disabled, no data written', { key });
         }
+        return null;
     }
 
-    private keyToCachedFile(key: string) {
-        return resolve(this.dir, Cache.keyToFileName(key));
+    public keyToCachedFile(key: CacheKey, ext?: string) {
+        return resolve(this.dir, Cache.keyToFileName(key, ext)) as Path;
     }
 
-    private static keyToFileName(key: string) {
-        return key.replace(/[\W]/g, '_');
+    private static keyToFileName(key: CacheKey, ext?: string) {
+        return key.replace(/[\W]/g, '_') + (ext ? '.' + ext : '');
     }
 
     private static toBuffer(data: any): Buffer {
         return Buffer.isBuffer(data)
             ? data
             : typeof data == 'string'
-              ? Buffer.from(data, 'binary')
+              ? Buffer.from(data, 'utf-8')
               : Buffer.from(JSON.stringify(data), 'utf-8');
     }
 }

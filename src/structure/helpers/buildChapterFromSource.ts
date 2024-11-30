@@ -25,7 +25,8 @@ export const buildChapterFromSource = async (
                 content: ast,
                 title: chapterTitle(path),
                 anchor: chapterAnchor(path),
-                counter
+                counter,
+                modificationTimeMs: fileStat.mtimeMs
             };
         }
     );

@@ -12,6 +12,7 @@ import { Pipeline } from '../../models/Pipeline';
 import { Strings } from '../../models/Strings';
 import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
+import { resolveFileSrc } from '../../util/resolveFileSrc';
 
 export const epubBuilder: EpubBuilder<any, any> = async <T, S extends Strings>(
     structure: Structure,
@@ -60,6 +61,12 @@ export const epubBuilder: EpubBuilder<any, any> = async <T, S extends Strings>(
             tocTitle: toc,
             lang: state.l10n.language,
             css,
+            cover: state.l10n.strings.coverImageUrl
+                ? resolveFileSrc(
+                      state.l10n.strings.coverImageUrl,
+                      state.context.source.base
+                  )
+                : undefined,
             verbose: state.context.options.logLevel <= LogLevel.DEBUG
         },
         epubChapters

@@ -1,11 +1,10 @@
-import { Root } from 'hast';
-
-import { Chapter } from '../models/Chapter';
 import { Context } from '../models/Context';
 import { Source } from '../models/Source';
+import { getContentModificationTime } from '../util/modificationTime';
 import { Counters } from './helpers/Counters';
 import { getSectionParametersFromSource } from './helpers/getSectionParametersFromSource';
 import { getSectionWithChaptersFromParameters } from './helpers/getSectionWithChaptersFromParameters';
+import { Section } from './Section';
 
 export class Structure {
     private sections: Section[] = [];
@@ -22,6 +21,12 @@ export class Structure {
 
     public getSections() {
         return this.sections;
+    }
+
+    public getContentModificationTimeMs(): number | null {
+        return getContentModificationTime(this.getSections(), (section) =>
+            section.getContentModificationTimeMs()
+        );
     }
 }
 
@@ -49,47 +54,3 @@ export const getStructure = async (
 
     return structure;
 };
-
-export class Section {
-    private chapters: Chapter[] = [];
-
-    constructor(
-        public readonly anchor: string,
-        public readonly title?: string,
-        private counter?: number,
-        private content?: Root,
-        private skipTableOfContents = false
-    ) {}
-
-    public getContent() {
-        return this.content;
-    }
-
-    public setContent(content: Root) {
-        this.content = content;
-    }
-
-    public appendChapter(chapter: Chapter) {
-        this.chapters.push(chapter);
-    }
-
-    public getChapters() {
-        return this.chapters;
-    }
-
-    public removeAllChapters() {
-        this.chapters = [];
-    }
-
-    public inTableOfContents() {
-        return !this.skipTableOfContents;
-    }
-
-    public getCounter() {
-        return this.counter;
-    }
-
-    public setCounter(counter?: number) {
-        this.counter = counter;
-    }
-}

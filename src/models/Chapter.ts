@@ -5,4 +5,5 @@ export interface Chapter {
     anchor: string;
     counter: number;
     content: Root;
+    modificationTimeMs: number;
 }

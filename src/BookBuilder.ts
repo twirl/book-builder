@@ -5,6 +5,7 @@ import datauri from 'datauri';
 import { BuilderMap, BuilderOptionsMap } from './builders';
 import { epubBuilder } from './builders/epub/EpubBuilder';
 import { htmlBuilder } from './builders/html/HtmlBuilder';
+import { pdfBuilder } from './builders/pdf/PdfBuilder';
 import { Cache } from './Cache';
 import { BuilderState } from './models/Builder';
 import { Context } from './models/Context';
@@ -61,6 +62,14 @@ export class BookBuilder {
                     this.structure,
                     state,
                     pipeline as Pipeline<T, S, 'epub'>,
+                    options
+                );
+                break;
+            case 'pdf':
+                await pdfBuilder(
+                    this.structure,
+                    state,
+                    pipeline as Pipeline<T, S, 'pdf'>,
                     options
                 );
                 break;

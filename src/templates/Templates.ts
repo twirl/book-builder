@@ -11,7 +11,8 @@ import {
 } from '../models/Reference';
 import { Strings } from '../models/Strings';
 import { Href, HtmlString } from '../models/Types';
-import { Section, Structure } from '../structure/Structure';
+import { Section } from '../structure/Section';
+import { Structure } from '../structure/Structure';
 import { astToHtml } from '../util/astToHtml';
 import { escapeHtml } from '../util/escapeHtml';
 import { getEntityAnchor } from '../util/getEntityName';
@@ -490,6 +491,18 @@ export class DefaultTemplates<
 
     public async htmlEpubDocument(root?: Root) {
         return root ? astToHtml(root) : ('' as HtmlString);
+    }
+
+    public async htmlPdfDocument(structure: Structure, css: string) {
+        return this.htmlDocument(structure, css);
+    }
+
+    public async htmlPdfHeaderTemplate() {
+        return `<span class="title"></span>` as HtmlString;
+    }
+
+    public async htmlPdfFooterTemplate() {
+        return `<span class="page"></span>` as HtmlString;
     }
 }
 

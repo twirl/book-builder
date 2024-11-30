@@ -2,7 +2,7 @@ import { readdir, stat as fsStat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { Context } from '../../models/Context';
-import { Section } from '../Structure';
+import { Section } from '../Section';
 import { buildChapterFromSource } from './buildChapterFromSource';
 import { Counters } from './Counters';
 import { SectionParameters } from './getSectionParametersFromSource';
