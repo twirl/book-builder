@@ -68,7 +68,7 @@ export class Cache {
         fallback: () => Promise<Buffer>,
         ext?: string
     ): Promise<Buffer> {
-        const cachedContent = await this.getCached(key, dateMs);
+        const cachedContent = await this.getCached(key, dateMs, ext);
         if (cachedContent !== null) {
             return cachedContent;
         } else {

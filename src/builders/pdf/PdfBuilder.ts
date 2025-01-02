@@ -1,7 +1,6 @@
-import { readFile } from 'node:fs/promises';
+import { copyFile, readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 
-import muhammara from 'muhammara';
 import puppeteer from 'puppeteer';
 
 import { BuilderState } from '../../models/Builder';
@@ -23,7 +22,7 @@ export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
     options: PdfBuilderOptions
 ) => {
     const cacheKey = basename(options.outFile) as CacheKey;
-    const tmpPdfPath = state.context.cache.keyToCachedFile(cacheKey);
+    const tmpPdfPath = state.context.cache.keyToCachedFile(cacheKey, 'pdf');
     const contentModificationTimeMs =
         structure.getContentModificationTimeMs() ?? Date.now();
 
@@ -40,7 +39,7 @@ export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
                     contentModificationTimeMs,
                     'html'
                 );
-                return doGeneratePdf(
+                await doGeneratePdf(
                     structure,
                     state,
                     pipeline,
@@ -50,6 +49,7 @@ export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
                         ? (cachedHtml.toString('utf-8') as HtmlString)
                         : undefined
                 );
+                return readFile(tmpPdfPath);
             },
             'pdf'
         );
@@ -57,21 +57,17 @@ export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
         await doGeneratePdf(structure, state, pipeline, options, tmpPdfPath);
     }
 
-    const writer = muhammara.createWriterToModify(tmpPdfPath, {
-        modifiedFilePath: options.outFile
-    });
-    const reader = muhammara.createReader(tmpPdfPath);
-
+    let filePath = tmpPdfPath;
     for (const plugin of pipeline.pdf.plugins) {
-        await plugin({
-            writer,
-            reader,
+        filePath = await plugin({
+            sourceFile: filePath,
             context: state.context,
-            l10n: state.l10n
+            l10n: state.l10n,
+            structure
         });
     }
 
-    writer.end();
+    await copyFile(filePath, options.outFile);
 };
 
 export const doGeneratePdf = async <T, S extends Strings>(
@@ -106,6 +102,7 @@ export const doGeneratePdf = async <T, S extends Strings>(
     }
 
     const browser = await puppeteer.launch({
+        browser: 'firefox',
         headless: true
     });
     const page = await browser.newPage();
@@ -115,13 +112,14 @@ export const doGeneratePdf = async <T, S extends Strings>(
     });
 
     await page.pdf({
-        path: options.outFile,
+        path: outFile,
         preferCSSPageSize: true,
         printBackground: true,
-        timeout: 0
+        timeout: 0,
+        headerTemplate: await state.l10n.templates.htmlPdfHeaderTemplate(),
+        footerTemplate: await state.l10n.templates.htmlPdfFooterTemplate(),
+        displayHeaderFooter: true
     });
 
     await browser.close();
-
-    return readFile(options.outFile);
 };

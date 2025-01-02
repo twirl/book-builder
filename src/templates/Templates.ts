@@ -137,7 +137,7 @@ export class DefaultTemplates<
         for (const section of structure.getSections()) {
             htmlParts.push(await this.htmlSection(section));
         }
-        return htmlParts.join(await this.htmlPageBreak()) as HtmlString;
+        return htmlParts.join(/*await this.htmlPageBreak()*/ '') as HtmlString;
     }
 
     public async htmlTableOfContents(structure: Structure) {
@@ -172,20 +172,17 @@ export class DefaultTemplates<
     }
 
     public async htmlSection(section: Section) {
-        const htmlParts = [await this.htmlSectionTitle(section)];
+        const htmlParts = ['<section>', await this.htmlSectionTitle(section)];
         const content = section.getContent();
+        const chapters = section.getChapters();
+        const pageBreak = await this.htmlPageBreak();
         if (content) {
-            htmlParts.push(
-                await this.htmlSectionContent(content),
-                await this.htmlPageBreak()
-            );
+            htmlParts.push(await this.htmlSectionContent(content));
         }
         for (const chapter of section.getChapters()) {
-            htmlParts.push(
-                await this.htmlChapter(chapter),
-                await this.htmlPageBreak()
-            );
+            htmlParts.push(await this.htmlChapter(chapter));
         }
+        htmlParts.push('</section>');
         return htmlParts.join('') as HtmlString;
     }
 
@@ -498,11 +495,13 @@ export class DefaultTemplates<
     }
 
     public async htmlPdfHeaderTemplate() {
-        return `<span class="title"></span>` as HtmlString;
+        return `<span style="text-align:center">${this.string(
+            'author'
+        )}. ${this.string('title')}</span>` as HtmlString;
     }
 
     public async htmlPdfFooterTemplate() {
-        return `<span class="page"></span>` as HtmlString;
+        return `<span class="pageNumber" style="text-align: center"></span>` as HtmlString;
     }
 }
 

@@ -1,1 +1,0 @@
-export { headerFooter } from './headerFooter';
