@@ -1,7 +1,8 @@
 import { LogLevel } from './Logger';
+import { Path } from './Types';
 
 export interface Options {
-    tmpDir: string;
+    tmpDir: Path;
     noCache: boolean;
     purgeCache: boolean;
     logLevel: LogLevel;

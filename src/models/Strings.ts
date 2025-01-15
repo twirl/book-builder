@@ -1,6 +1,7 @@
 export interface Strings {
     author: string;
     title: string;
+    year: string;
     description: string;
     favicon: string;
     landingUrl: string;

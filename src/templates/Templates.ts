@@ -79,7 +79,7 @@ export class DefaultTemplates<
     }
 
     public linkText(href: Href): string {
-        return href.replace(/^[\w\+]+\:\/\//, '');
+        return href.replace(/^[\w\+]+\:\/\//, '').replace(/\/$/, '');
     }
 
     public bibliographyItemAnchor(
@@ -269,6 +269,7 @@ export class DefaultTemplates<
         chapter: Chapter,
         section: Section
     ) {
+        debugger;
         const anchor = escapeHtml(
             this.referenceBackAnchor(ref, chapter, section)
         );

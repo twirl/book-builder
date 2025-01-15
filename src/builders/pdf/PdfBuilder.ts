@@ -1,7 +1,7 @@
 import { copyFile, readFile } from 'node:fs/promises';
 import { basename } from 'node:path';
 
-import puppeteer from 'puppeteer';
+import { convertText } from 'html-to-latex';
 
 import { BuilderState } from '../../models/Builder';
 import {
@@ -14,6 +14,7 @@ import { Strings } from '../../models/Strings';
 import { CacheKey, HtmlString, Path } from '../../models/Types';
 import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
+import { tex2pdf } from '../../util/tex2pdf';
 
 export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
     structure: Structure,
@@ -45,6 +46,7 @@ export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
                     pipeline,
                     options,
                     tmpPdfPath,
+                    contentModificationTimeMs,
                     cachedHtml
                         ? (cachedHtml.toString('utf-8') as HtmlString)
                         : undefined
@@ -54,7 +56,14 @@ export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
             'pdf'
         );
     } else {
-        await doGeneratePdf(structure, state, pipeline, options, tmpPdfPath);
+        await doGeneratePdf(
+            structure,
+            state,
+            pipeline,
+            options,
+            tmpPdfPath,
+            contentModificationTimeMs
+        );
     }
 
     let filePath = tmpPdfPath;
@@ -76,6 +85,7 @@ export const doGeneratePdf = async <T, S extends Strings>(
     pipeline: Pipeline<T, S, 'pdf'>,
     options: PdfBuilderOptions,
     outFile: Path,
+    contentModificationTimeMs: number,
     cachedHtml?: HtmlString
 ) => {
     const css = await cssAstPipeline(
@@ -101,25 +111,12 @@ export const doGeneratePdf = async <T, S extends Strings>(
         state.context.logger.debug('HTML for PDF generated', file);
     }
 
-    const browser = await puppeteer.launch({
-        browser: 'firefox',
-        headless: true
-    });
-    const page = await browser.newPage();
+    const tex = await state.context.cache.getCachedOrPutToCache(
+        basename(options.outFile) as CacheKey,
+        contentModificationTimeMs,
+        async () => convertText(html),
+        'tex'
+    );
 
-    await page.setContent(html, {
-        waitUntil: 'networkidle0'
-    });
-
-    await page.pdf({
-        path: outFile,
-        preferCSSPageSize: true,
-        printBackground: true,
-        timeout: 0,
-        headerTemplate: await state.l10n.templates.htmlPdfHeaderTemplate(),
-        footerTemplate: await state.l10n.templates.htmlPdfFooterTemplate(),
-        displayHeaderFooter: true
-    });
-
-    await browser.close();
+    await tex2pdf(tex, outFile);
 };

@@ -17,6 +17,7 @@ import { StructureAstPlugin } from './models/plugins/StructureAstPlugin';
 import { Source } from './models/Source';
 import { Strings } from './models/Strings';
 import { Templates } from './models/Templates';
+import { Path } from './models/Types';
 import { structurePipeline } from './pipeline/structure';
 import { getStructure, Structure } from './structure/Structure';
 
@@ -96,7 +97,7 @@ export async function init(parameters: Parameters) {
     const logger = parameters.logger ?? new ConsoleLogger(options);
     const cache = await Cache.init(
         logger,
-        resolve(options.tmpDir),
+        resolve(options.tmpDir) as Path,
         options.noCache,
         options.purgeCache
     );
@@ -123,7 +124,7 @@ export interface AstPipeline<T, S> {
 }
 
 export const DEFAULT_OPTIONS: Options = {
-    tmpDir: './tmp',
+    tmpDir: './tmp' as Path,
     noCache: false,
     purgeCache: false,
     logLevel: LogLevel.DEBUG,
