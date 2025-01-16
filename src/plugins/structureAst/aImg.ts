@@ -1,6 +1,7 @@
 import { ElementContent } from 'hast';
 
 import { StructureAstState } from '../../models/plugins/StructureAstPlugin';
+import { Href } from '../../models/Types';
 import { htmlToAstElements } from '../../preprocessors/html';
 import { isElement } from '../../util/applyHastAstPlugin';
 import { createStatelessPlugin } from '../../util/statelessPlugin';
@@ -27,7 +28,9 @@ export const aImg = <T, S>() =>
 
                         const nodes = await htmlToAstElements(
                             await l10n.templates.htmlAImg({
-                                href: (node.properties.href ?? '').toString(),
+                                href: (
+                                    node.properties.href ?? ''
+                                ).toString() as Href,
                                 src: (img.properties.src ?? '').toString(),
                                 alt: (img.properties.alt ?? '').toString(),
                                 title: (img.properties.title ?? '').toString(),
