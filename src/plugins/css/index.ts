@@ -1,0 +1,1 @@
+export { dataUri } from './dataUri';
