@@ -1,4 +1,6 @@
+import { Path } from './Types';
+
 export interface Source {
-    dir: string;
-    base: string;
+    dir: Path;
+    base: Path;
 }
