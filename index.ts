@@ -37,3 +37,4 @@ export {
     StructurePluginState
 } from './src/models/plugins/StructurePlugin';
 export { plugins } from './src/plugins';
+export { DefaultTemplates, AImgParams } from './src/templates/Templates';
