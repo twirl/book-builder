@@ -1,7 +1,17 @@
 export { init, DEFAULT_OPTIONS, Parameters } from './src/BookBuilder';
 
+export {
+    AstPlugin,
+    AstPluginRunner,
+    Action,
+    ContinueAction,
+    ContinueNestedAction,
+    ReplaceAction
+} from './src/models/AstPlugin';
 export { Builder, BuilderState } from './src/models/Builder';
+export { Chapter } from './src/models/Chapter';
 export { CssClasses } from './src/models/CssClasses';
+export { L10n } from './src/models/L10n';
 export { Logger, LogLevel } from './src/models/Logger';
 export { Options } from './src/models/Options';
 export { Pipeline, PipelineMap, CommonPipeline } from './src/models/Pipeline';
@@ -10,6 +20,10 @@ export { Source } from './src/models/Source';
 export { Strings } from './src/models/Strings';
 export { Templates } from './src/models/Templates';
 export { HtmlString, Path, Href, CacheKey } from './src/models/Types';
+
+export { Structure } from './src/structure/Structure';
+export { Section } from './src/structure/Section';
+export { applyAstPluginToStructure } from './src/util/applyAstPluginToStructure';
 
 export {
     BuilderMap,
@@ -38,3 +52,5 @@ export {
 } from './src/models/plugins/StructurePlugin';
 export { plugins } from './src/plugins';
 export { DefaultTemplates, AImgParams } from './src/templates/Templates';
+
+export { escapeHtml } from './src/util/escapeHtml';
