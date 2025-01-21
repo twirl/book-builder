@@ -109,7 +109,8 @@ export class DefaultTemplates<
         return `<!doctype html><html lang="${
             this.locale
         }"><head>${await this.htmlHead(css)}</head><body>${await this.htmlBody(
-            await this.htmlStructure(structure)
+            await this.htmlStructure(structure),
+            structure
         )}</body></html>` as HtmlString;
     }
 
@@ -128,7 +129,7 @@ export class DefaultTemplates<
         <style>${css}</style>` as HtmlString;
     }
 
-    public async htmlBody(body: string) {
+    public async htmlBody(body: string, _structure: Structure) {
         return `<article>${body}</article>` as HtmlString;
     }
 
@@ -137,7 +138,7 @@ export class DefaultTemplates<
         for (const section of structure.getSections()) {
             htmlParts.push(await this.htmlSection(section));
         }
-        return htmlParts.join(/*await this.htmlPageBreak()*/ '') as HtmlString;
+        return htmlParts.join(await this.htmlPageBreak()) as HtmlString;
     }
 
     public async htmlTableOfContents(structure: Structure) {
@@ -172,18 +173,19 @@ export class DefaultTemplates<
     }
 
     public async htmlSection(section: Section) {
-        const htmlParts = ['<section>', await this.htmlSectionTitle(section)];
+        const htmlParts = [];
         const content = section.getContent();
-        const chapters = section.getChapters();
-        const pageBreak = await this.htmlPageBreak();
         if (content) {
             htmlParts.push(await this.htmlSectionContent(content));
         }
         for (const chapter of section.getChapters()) {
             htmlParts.push(await this.htmlChapter(chapter));
         }
-        htmlParts.push('</section>');
-        return htmlParts.join('') as HtmlString;
+        return `<section>${await this.htmlSectionTitle(
+            section
+        )}${htmlParts.join(
+            await this.htmlPageBreak()
+        )}</section>` as HtmlString;
     }
 
     public async htmlSectionTitle(section: Section) {
@@ -267,15 +269,15 @@ export class DefaultTemplates<
     public async htmlInPlaceReference(
         ref: Reference,
         chapter: Chapter,
-        section: Section
+        section: Section,
+        isSuccessiveRefs: boolean = false
     ) {
-        debugger;
         const anchor = escapeHtml(
             this.referenceBackAnchor(ref, chapter, section)
         );
         return `<sup ${this.cssClass(
             'inPlaceReference'
-        )}><a id="${anchor}" href="#${escapeHtml(
+        )}>${isSuccessiveRefs ? '·' : ''}<a id="${anchor}" href="#${escapeHtml(
             this.referenceAnchor(ref, chapter, section)
         )}">${ref.counter}</a></sup>` as HtmlString;
     }

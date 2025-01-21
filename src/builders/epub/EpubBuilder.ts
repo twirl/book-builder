@@ -27,9 +27,6 @@ export const epubBuilder: EpubBuilder<any, any> = async <T, S extends Strings>(
         pipeline.css.plugins
     );
 
-    // for (const plugin of pipeline.epub.plugins) {
-    //     html = await plugin(html, state);
-    // }
     const epubChapters: EpubChapter[] = [];
     for (const section of structure.getSections()) {
         epubChapters.push({

@@ -21,6 +21,7 @@ export class RefAstPluginRunner<T, S> {
     private readonly refs: Reference[] = [];
     private readonly matchRe: RegExp;
     private counter: number;
+    private isSuccessiveRefs = false;
 
     constructor(
         private readonly state: StructureAstState<T, S>,
@@ -49,19 +50,23 @@ export class RefAstPluginRunner<T, S> {
                         counter: this.counter++
                     };
                     this.refs.push(ref);
+                    const newValue = await htmlToAstElements(
+                        await this.state.l10n.templates.htmlInPlaceReference(
+                            ref,
+                            this.state.chapter,
+                            this.state.section,
+                            this.isSuccessiveRefs
+                        )
+                    );
+                    this.isSuccessiveRefs = true;
                     return {
                         action: 'replace',
-                        newValue: await htmlToAstElements(
-                            await this.state.l10n.templates.htmlInPlaceReference(
-                                ref,
-                                this.state.chapter,
-                                this.state.section
-                            )
-                        )
+                        newValue
                     };
                 }
             }
         }
+        this.isSuccessiveRefs = false;
         return { action: 'continue_nested' };
     }
 

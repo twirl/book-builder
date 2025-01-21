@@ -2,6 +2,7 @@ import { readdir, stat as fsStat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 import { Context } from '../../models/Context';
+import { Path } from '../../models/Types';
 import { Section } from '../Section';
 import { buildChapterFromSource } from './buildChapterFromSource';
 import { Counters } from './Counters';
@@ -21,11 +22,7 @@ export const getSectionWithChaptersFromParameters = async (
         }
     }
 
-    const section = new Section(
-        parameters.anchor,
-        parameters.title,
-        counters.getSectionCountIncremented()
-    );
+    const section = new Section(parameters.anchor, parameters.title);
     for (const { path, stat } of files.sort()) {
         const chapterCounter = counters.getChapterCountIncremented();
         const range = context.options.chapterRange;
@@ -34,7 +31,12 @@ export const getSectionWithChaptersFromParameters = async (
             (chapterCounter >= range[0] && chapterCounter <= range[1])
         ) {
             section.appendChapter(
-                await buildChapterFromSource(path, stat, counters, context)
+                await buildChapterFromSource(
+                    path as Path,
+                    stat,
+                    counters,
+                    context
+                )
             );
         }
     }

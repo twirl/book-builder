@@ -1,5 +1,6 @@
 import { ElementContent, Element } from 'hast';
 import highlight, { LanguageFn } from 'highlight.js';
+import typescript from 'highlight.js/lib/languages/typescript';
 
 import { Action } from '../../models/AstPlugin.js';
 import { StructureAstState } from '../../models/plugins/StructureAstPlugin.js';
@@ -140,5 +141,6 @@ export const DEFAULT_LANGUAGE_DEFITIONS: Record<string, LanguageFn> = {
                 hljs.C_BLOCK_COMMENT_MODE
             ]
         };
-    }
+    },
+    typescript
 };
