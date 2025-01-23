@@ -6,6 +6,10 @@ export interface Reference {
     bibliographyItemAlias?: BibliographyItemAlias;
     text?: string;
     href?: Href;
+    alt?: {
+        bibliographyItemAlias?: BibliographyItemAlias;
+        text?: string;
+    };
     counter: number;
 }
 

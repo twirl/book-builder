@@ -28,7 +28,10 @@ export class RefAstPluginRunner<T, S> {
         private readonly options: RefAstPluginOptions
     ) {
         this.matchRe = new RegExp(
-            `^${this.options.prefix}(?::(?<alias>[\\w-_]+))?(?:\\s+(?<text>.+))?$`
+            '^' +
+                `${this.options.prefix}(?::(?<alias>[\\w-_]+))?(?:\\s+(?<text>[^\\|]+))?` +
+                `(?:\\|\\s*${this.options.prefix}(?::(?<altAlias>[\\w-_]+))?(?:\\s+(?<altText>.+))?)?` +
+                '$'
         );
         this.counter = options.continueCountFrom ?? 1;
     }
@@ -38,17 +41,13 @@ export class RefAstPluginRunner<T, S> {
             const href = node.properties.href;
             const content = node.children[0];
             if (content?.type === 'text') {
-                const match = content.value.match(this.matchRe);
-                if (match && match.groups) {
-                    const alias = match.groups.alias;
-                    const ref = {
-                        bibliographyItemAlias: alias
-                            ? (alias as BibliographyItemAlias)
-                            : undefined,
-                        text: match.groups.text,
-                        href: href ? (href as Href) : undefined,
-                        counter: this.counter++
-                    };
+                const ref = this.matchReferenceContent(
+                    this.counter,
+                    content.value,
+                    href ? String(href) : undefined
+                );
+                if (ref) {
+                    this.counter++;
                     this.refs.push(ref);
                     const newValue = await htmlToAstElements(
                         await this.state.l10n.templates.htmlInPlaceReference(
@@ -68,6 +67,38 @@ export class RefAstPluginRunner<T, S> {
         }
         this.isSuccessiveRefs = false;
         return { action: 'continue_nested' };
+    }
+
+    public matchReferenceContent(
+        counter: number,
+        content: string,
+        href?: string
+    ): Reference | null {
+        const match = content.match(this.matchRe);
+        if (match && match.groups) {
+            const groups = match.groups;
+            const alias = groups.alias;
+            const alt =
+                groups.altAlias || groups.altText
+                    ? {
+                          bibliographyItemAlias:
+                              groups.altAlias as BibliographyItemAlias,
+                          text: groups.altText
+                      }
+                    : undefined;
+            const ref: Reference = {
+                bibliographyItemAlias: alias
+                    ? (alias as BibliographyItemAlias)
+                    : undefined,
+                text: groups.text,
+                href: href ? (href as Href) : undefined,
+                alt,
+                counter
+            };
+            return ref;
+        } else {
+            return null;
+        }
     }
 
     public async finish() {}
