@@ -6,6 +6,7 @@ export interface CssClasses {
     pageBreak: string;
     tableOfContents: string;
     references: string;
+    referenceInlineLink: string;
     backAnchor: string;
     externalLink: string;
     refToBibliography: string;

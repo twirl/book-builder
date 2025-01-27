@@ -7,6 +7,7 @@ import { Action, AstPlugin } from '../../src/models/AstPlugin';
 import { markdownToAst } from '../../src/preprocessors/markdown';
 import {
     applyHastPluginToAst,
+    isElement,
     replaceFromHtml
 } from '../../src/util/applyHastAstPlugin';
 import { astToHtml } from '../../src/util/astToHtml';
@@ -35,23 +36,34 @@ describe('Hast Ast Plugins', () => {
 
     it('Transforms markdown: preserves plugin state', async () => {
         const ast = await markdownToAst(`**strong** [ref **strong**](/link2)`);
-        const state = { counter: 1 };
-        const pluginClass = class implements AstPlugin<{ counter: number }> {
-            private counter = 0;
-            public async init(state: { counter: number }) {
-                this.counter = state.counter;
+        const state = { elementCounter: 1, nonElementCounter: 0 };
+        const pluginClass = class implements AstPlugin<TestState> {
+            private elementCounter = 0;
+            private nonElementCounter = 0;
+            public async init(state: TestState) {
+                this.elementCounter = state.elementCounter;
+                this.nonElementCounter = state.nonElementCounter;
                 return this;
             }
             public async run(input: ElementContent): Promise<Action> {
-                this.counter++;
+                if (isElement(input)) {
+                    this.elementCounter++;
+                } else {
+                    this.nonElementCounter++;
+                }
                 return { action: 'continue_nested' };
             }
-            public async finish(state: { counter: number }) {
-                state.counter = this.counter;
+            public async finish(state: {
+                elementCounter: number;
+                nonElementCounter: number;
+            }) {
+                state.elementCounter = this.elementCounter;
+                state.nonElementCounter = this.nonElementCounter;
             }
         };
         await applyHastPluginToAst(ast, new pluginClass(), state);
-        expect(state.counter).toEqual(5);
+        expect(state.elementCounter).toEqual(5);
+        expect(state.nonElementCounter).toEqual(4);
     });
 
     it('Transforms markdown: alter node and continue', async () => {
@@ -119,3 +131,8 @@ describe('Hast Ast Plugins', () => {
         );
     });
 });
+
+interface TestState {
+    elementCounter: number;
+    nonElementCounter: number;
+}

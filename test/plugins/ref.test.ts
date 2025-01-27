@@ -2,10 +2,14 @@ import { describe, it } from 'node:test';
 
 import expect from 'expect';
 
+import { StructureAstState } from '../../src/models/plugins/StructureAstPlugin';
 import { BibliographyItemAlias, Reference } from '../../src/models/Reference';
 import { Href } from '../../src/models/Types';
 import { ref } from '../../src/plugins/structureAst';
 import { RefAstPluginRunner } from '../../src/plugins/structureAst/ref';
+import { markdownToAst } from '../../src/preprocessors/markdown';
+import { applyHastPluginToAst } from '../../src/util/applyHastAstPlugin';
+import { astToHtml } from '../../src/util/astToHtml';
 
 describe('matchReferenceContent', () => {
     async function expectMatches(
@@ -63,5 +67,33 @@ describe('matchReferenceContent', () => {
                 });
             });
         });
+    });
+});
+
+describe('Processing references', () => {
+    it('Correctly processes successive refs', async () => {
+        const ast = await markdownToAst(
+            'bla-bla[prefix:alias refText]()[prefix refText]() bla-bla [prefix Another ref](/href)'
+        );
+        const state = {
+            l10n: {
+                templates: {
+                    htmlInPlaceReference: (
+                        ref: Reference,
+                        chapter: any,
+                        section: any,
+                        isSuccessiveRefs: boolean
+                    ) =>
+                        isSuccessiveRefs
+                            ? '<a>successive ref</a>'
+                            : '<a>normal ref'
+                }
+            }
+        } as StructureAstState<any, any>;
+        const plugin = ref({ prefix: 'prefix' });
+        await applyHastPluginToAst(ast, plugin, state);
+        expect(await astToHtml(ast)).toEqual(
+            '<p>bla-bla<a>normal ref</a><a>successive ref</a> bla-bla <a>normal ref</a></p>'
+        );
     });
 });

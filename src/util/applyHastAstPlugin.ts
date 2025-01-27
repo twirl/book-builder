@@ -1,4 +1,4 @@
-import { Element, ElementContent, Root, RootContent } from 'hast';
+import { Element, ElementContent, Root, RootContent, Text } from 'hast';
 
 import { AstPlugin, AstPluginRunner, ReplaceAction } from '../models/AstPlugin';
 import { htmlToAst } from '../preprocessors/html';
@@ -11,7 +11,7 @@ export const applyHastPluginToAst = async <T>(
     const runner = await plugin.init(state);
     const updatedChildren: RootContent[] = [];
     for (const node of ast.children) {
-        if (isElement(node)) {
+        if (isElement(node) || isTextNode(node)) {
             updatedChildren.push(...(await applyPluginToNode(node, runner)));
         } else {
             updatedChildren.push(node);
@@ -23,7 +23,7 @@ export const applyHastPluginToAst = async <T>(
 };
 
 export const applyPluginToNode = async <State>(
-    node: Element,
+    node: Element | Text,
     plugin: AstPluginRunner<State, ElementContent>
 ): Promise<ElementContent[]> => {
     const result = await plugin.run(node);
@@ -36,9 +36,12 @@ export const applyPluginToNode = async <State>(
             return [node];
         case 'continue_nested':
         default:
+            if (!isElement(node)) {
+                return [node];
+            }
             const updatedChildren: ElementContent[] = [];
             for (const childNode of node.children) {
-                if (isElement(childNode)) {
+                if (isElement(childNode) || isTextNode(childNode)) {
                     updatedChildren.push(
                         ...(await applyPluginToNode(childNode, plugin))
                     );
@@ -53,6 +56,10 @@ export const applyPluginToNode = async <State>(
 
 export const isElement = (node: RootContent): node is Element => {
     return node.type === 'element';
+};
+
+export const isTextNode = (node: RootContent): node is Text => {
+    return node.type === 'text';
 };
 
 export const replaceFromHtml = async (html: string): Promise<ReplaceAction> => {

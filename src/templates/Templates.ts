@@ -17,6 +17,7 @@ import { astToHtml } from '../util/astToHtml';
 import { escapeHtml } from '../util/escapeHtml';
 import { getEntityAnchor } from '../util/getEntityName';
 import { kebabCase } from '../util/strings';
+import { isFieldDefined } from '../util/types';
 
 export class DefaultTemplates<
     S extends Strings = Strings,
@@ -282,8 +283,12 @@ export class DefaultTemplates<
         )}">${ref.counter}</a></sup>` as HtmlString;
     }
 
-    public async htmlExternalLink(href: Href, text: HtmlString) {
-        return `<a target="_blank" ${this.cssClass('externalLink')} href="${escapeHtml(
+    public async htmlExternalLink(
+        href: Href,
+        text: HtmlString,
+        cssClass: keyof C = 'externalLink'
+    ) {
+        return `<a target="_blank" ${this.cssClass(cssClass)} href="${escapeHtml(
             href
         )}">${text}</a>` as HtmlString;
     }
@@ -327,20 +332,26 @@ export class DefaultTemplates<
             prependPath
         )}#${escapeHtml(
             this.referenceBackAnchor(ref, chapter, section)
-        )}" id="${anchor}"><sup>${
-            ref.counter
-        }</sup>&nbsp;</a><span>${await this.htmlReferenceText(
-            ref,
-            prevRef,
-            bibliography
-        )}${link ? '<br/>' + link : ''}</span>` as HtmlString;
+        )}" id="${anchor}"><sup>${ref.counter}</sup>&nbsp;</a><span>${
+            isFieldDefined(ref, 'alt')
+                ? await this.htmlAltReference(ref, prevRef, bibliography)
+                : `${await this.htmlReferenceText(
+                      ref,
+                      prevRef,
+                      bibliography
+                  )}${link ? '<br/>' + link : ''}</span>`
+        }` as HtmlString;
     }
 
-    public async htmlReferenceLink(ref: Reference): Promise<HtmlString | null> {
+    public async htmlReferenceLink(
+        ref: Reference,
+        cssClass: keyof C = 'externalLink'
+    ): Promise<HtmlString | null> {
         return ref.href
             ? await this.htmlExternalLink(
                   ref.href,
-                  escapeHtml(this.linkText(ref.href))
+                  escapeHtml(this.linkText(ref.href)),
+                  cssClass
               )
             : null;
     }
@@ -370,6 +381,43 @@ export class DefaultTemplates<
         }
     }
 
+    public async htmlAltReference(
+        ref: Reference & Required<Pick<Reference, 'alt'>>,
+        prevRef: Reference | null,
+        bibliography?: Bibliography
+    ) {
+        const alt = ref.alt;
+        if (!alt.bibliographyItemAlias && !alt.text) {
+            this.context.logger.error(
+                'Alt reference must contain either text or alias',
+                ref
+            );
+        }
+        if (
+            alt.bibliographyItemAlias &&
+            (!bibliography || !bibliography[alt.bibliographyItemAlias])
+        ) {
+            this.context.logger.error('Unknown alt bibliography alias', ref);
+        }
+        const link = await this.htmlReferenceLink(ref, 'referenceInlineLink');
+        return `${this.string('referenceSee')} “${await this.htmlReferenceText(
+            ref,
+            prevRef,
+            bibliography
+        )}”${link ? ` &middot; ${link}` : ''} ${this.string('referenceOr')} ${
+            alt.bibliographyItemAlias &&
+            bibliography &&
+            bibliography[alt.bibliographyItemAlias]
+                ? await this.htmlAltReferenceBibliographyItem(
+                      ref,
+                      prevRef,
+                      alt.bibliographyItemAlias,
+                      bibliography[alt.bibliographyItemAlias]
+                  )
+                : escapeHtml(alt.text ?? '[ERROR]')
+        }` as HtmlString;
+    }
+
     public async htmlReferenceBibliographyItem(
         ref: Reference,
         prevRef: Reference | null,
@@ -386,12 +434,23 @@ export class DefaultTemplates<
                 'refToBibliography'
             )} href="#${this.bibliographyItemAnchor(alias, item)}">${this.bibliographyItemShortName(
                 item
-            )}</a>${
-                ref.text
-                    ? ', ' + escapeHtml(ref.text)
-                    : ' ' + (await this.htmlBibliographyItemTitle(item))
-            }` as HtmlString;
+            )}</a>${ref.text ? ', ' + escapeHtml(ref.text) : ''}` as HtmlString;
         }
+    }
+
+    public async htmlAltReferenceBibliographyItem(
+        ref: Reference & Required<Pick<Reference, 'alt'>>,
+        _prevRef: Reference | null,
+        alias: BibliographyItemAlias,
+        item: BibliographyItem
+    ) {
+        return `<a ${this.cssClass(
+            'refToBibliography'
+        )} href="#${this.bibliographyItemAnchor(alias, item)}">${this.bibliographyItemShortName(
+            item
+        )}</a>${
+            ref.alt.text ? ', ' + escapeHtml(ref.alt.text) : ''
+        }` as HtmlString;
     }
 
     public async htmlPageBreak() {
