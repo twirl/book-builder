@@ -13,8 +13,7 @@ export const buildChapterFromSource = async (
     fileStat: Stats,
     counters: Counters,
     context: Context
-): Promise<Chapter> => {
-    return context.cache.getCachedJsonOrPutToCache<Chapter>(
+): Promise<Chapter> => context.cache.getCachedJsonOrPutToCache<Chapter>(
         path as string as CacheKey,
         fileStat.mtimeMs,
         async () => {
@@ -31,9 +30,8 @@ export const buildChapterFromSource = async (
             };
         }
     );
-};
 
 export const chapterTitle = (path: string, headers?: string[]) =>
-    headers && headers.length ? headers.join('. ') : getEntityName(path);
+    headers?.length ? headers.join('. ') : getEntityName(path);
 
 export const chapterAnchor = (path: string) => getEntityAnchor(path);

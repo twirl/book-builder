@@ -44,7 +44,7 @@ describe('CSS Ast Plugins', () => {
             CssNode
         >(async (node) => {
             if (node.type === 'Rule') {
-                const first = node.block.children.first;
+                const {first} = node.block.children;
                 if (first?.type === 'Declaration') {
                     first.property = 'color';
                 }

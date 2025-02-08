@@ -21,4 +21,4 @@ export interface BibliographyItem {
     hrefs?: Href[];
 }
 
-export type Bibliography = { [alias: string]: BibliographyItem };
+export interface Bibliography { [alias: string]: BibliographyItem }

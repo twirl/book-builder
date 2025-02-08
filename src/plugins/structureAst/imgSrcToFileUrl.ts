@@ -7,7 +7,7 @@ import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const imgSrcToFileUrl = <T, S>(base: string) =>
     createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
-        async (node: ElementContent, state: StructureAstState<T, S>) => {
+        async (node: ElementContent) => {
             if (
                 isElement(node) &&
                 node.tagName === 'img' &&

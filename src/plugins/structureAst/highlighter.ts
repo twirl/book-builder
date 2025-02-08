@@ -12,7 +12,7 @@ export const highlighter = <T, S>(options?: HighlighterOptions) => {
     const hljs = highlight.newInstance();
 
     for (const language of languages) {
-        const name = typeof language == 'string' ? language : language.name;
+        const name = typeof language === 'string' ? language : language.name;
         const definition =
             typeof language === 'string'
                 ? DEFAULT_LANGUAGE_DEFITIONS[language]
@@ -23,7 +23,7 @@ export const highlighter = <T, S>(options?: HighlighterOptions) => {
     }
 
     return createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
-        async (node, state): Promise<Action> => {
+        async (node, _context, state): Promise<Action> => {
             const code = extractCode(node);
             if (code && code.language && languages.includes(code.language)) {
                 const highlighted = hljs.highlight(code.code, {

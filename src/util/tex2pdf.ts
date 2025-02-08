@@ -4,8 +4,7 @@ import streamify from 'streamify-string';
 
 import { Path } from '../models/Types';
 
-export const tex2pdf = (tex: string | Buffer, outFile: Path) => {
-    return new Promise<void>((resolve, reject) => {
+export const tex2pdf = (tex: string | Buffer, outFile: Path) => new Promise<void>((resolve, reject) => {
         const input = streamify(
             Buffer.isBuffer(tex) ? tex.toString('utf-8') : tex
         );
@@ -18,4 +17,3 @@ export const tex2pdf = (tex: string | Buffer, outFile: Path) => {
         });
         pdf.on('finish', () => resolve());
     });
-};

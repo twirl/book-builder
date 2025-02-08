@@ -7,11 +7,9 @@ import {
 } from '../../models/plugins/StructureAstPlugin';
 import { htmlToAstElements } from '../../preprocessors/html';
 
-export const h5Counter = <T, S>(): StructureAstPlugin<T, S> => {
-    return {
+export const h5Counter = <T, S>(): StructureAstPlugin<T, S> => ({
         init: async (state) => new H5CounterPlugin<T, S>(state)
-    };
-};
+    });
 
 export class H5CounterPlugin<T, S> {
     private counter = 0;

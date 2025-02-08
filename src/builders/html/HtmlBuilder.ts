@@ -1,15 +1,12 @@
 import { writeFile } from 'node:fs/promises';
 
 import { BuilderState } from '../../models/Builder';
-import {
-    HtmlBuilder,
-    HtmlBuilderOptions
-} from '../../models/builders/HtmlBuilder';
+import { HtmlBuilderOptions } from '../../models/builders/HtmlBuilder';
 import { Pipeline } from '../../models/Pipeline';
 import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
 
-export const htmlBuilder: HtmlBuilder<any, any> = async <T, S>(
+export const htmlBuilder = async <T, S>(
     structure: Structure,
     state: BuilderState<T, S>,
     pipeline: Pipeline<T, S, 'html'>,

@@ -8,11 +8,9 @@ import {
 } from '../../models/plugins/StructureAstPlugin';
 import { astNodeToHtml } from '../../util/astToHtml';
 
-export const h3Title = <T, S>(): StructureAstPlugin<T, S> => {
-    return {
+export const h3Title = <T, S>(): StructureAstPlugin<T, S> => ({
         init: async () => new H3TitlePlugin<T, S>()
-    };
-};
+    });
 
 export class H3TitlePlugin<T, S> {
     private readonly h3Contents: string[] = [];

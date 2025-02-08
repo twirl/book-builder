@@ -4,16 +4,13 @@ import { unified } from 'unified';
 
 import { HtmlString } from '../models/Types';
 
-export const astToHtml = async (ast: Root): Promise<HtmlString> => {
-    return unified()
+export const astToHtml = async (ast: Root): Promise<HtmlString> => unified()
         .use(rehypeStringify, {
             closeSelfClosing: true
         })
         .stringify(ast) as HtmlString;
-};
 
-export const astNodeToHtml = async (ast: Element): Promise<HtmlString> => {
-    return unified()
+export const astNodeToHtml = async (ast: Element): Promise<HtmlString> => unified()
         .use(rehypeStringify, {
             closeSelfClosing: true
         })
@@ -21,4 +18,3 @@ export const astNodeToHtml = async (ast: Element): Promise<HtmlString> => {
             type: 'root',
             children: [ast]
         }) as HtmlString;
-};

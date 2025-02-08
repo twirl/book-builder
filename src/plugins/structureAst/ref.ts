@@ -11,11 +11,9 @@ import { htmlToAstElements } from '../../preprocessors/html';
 
 export const ref = <T, S>(
     options: RefAstPluginOptions
-): StructureAstPlugin<T, S> => {
-    return {
+): StructureAstPlugin<T, S> => ({
         init: async (state) => new RefAstPluginRunner<T, S>(state, options)
-    };
-};
+    });
 
 export class RefAstPluginRunner<T, S> {
     private readonly refs: Reference[] = [];
@@ -38,7 +36,7 @@ export class RefAstPluginRunner<T, S> {
 
     public async run(node: ElementContent): Promise<Action<ElementContent>> {
         if (node.type === 'element' && node.tagName === 'a') {
-            const href = node.properties.href;
+            const {href} = node.properties;
             const content = node.children[0];
             if (content?.type === 'text') {
                 const ref = this.matchReferenceContent(
@@ -75,9 +73,9 @@ export class RefAstPluginRunner<T, S> {
         href?: string
     ): Reference | null {
         const match = content.match(this.matchRe);
-        if (match && match.groups) {
-            const groups = match.groups;
-            const alias = groups.alias;
+        if (match?.groups) {
+            const {groups} = match;
+            const {alias} = groups;
             const alt =
                 groups.altAlias || groups.altText
                     ? {

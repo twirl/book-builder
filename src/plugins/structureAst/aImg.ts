@@ -8,7 +8,11 @@ import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const aImg = <T, S>() =>
     createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
-        async (p: ElementContent, { l10n }: StructureAstState<T, S>) => {
+        async (
+            p: ElementContent,
+            _context,
+            { l10n }: StructureAstState<T, S>
+        ) => {
             if (isElement(p) && p.children.length == 1) {
                 const node = p.children[0];
                 if (

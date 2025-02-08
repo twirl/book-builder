@@ -9,7 +9,11 @@ import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const imgDataUri = <T, S>() =>
     createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
-        async (node: ElementContent, state: StructureAstState<T, S>) => {
+        async (
+            node: ElementContent,
+            _context,
+            state: StructureAstState<T, S>
+        ) => {
             if (
                 isElement(node) &&
                 node.tagName === 'img' &&

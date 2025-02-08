@@ -5,8 +5,14 @@ export interface AstPlugin<State, C = ElementContent> {
 }
 
 export interface AstPluginRunner<State, C = ElementContent> {
-    run: (input: C) => Promise<Action<C>>;
+    run: (input: C, context: AstContext<C>) => Promise<Action<C>>;
     finish: (state: State) => Promise<void>;
+}
+
+export interface AstContext<C = ElementContent> {
+    index: number;
+    previousSibling: C | null;
+    nextSibling: C | null;
 }
 
 export type Action<C = ElementContent> =

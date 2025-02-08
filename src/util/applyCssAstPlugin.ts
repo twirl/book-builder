@@ -1,4 +1,4 @@
-import { StyleSheet, CssNode, List, parse, Atrule } from 'css-tree';
+import { StyleSheet, CssNode, List, parse } from 'css-tree';
 
 import { AstPluginRunner, ReplaceAction } from '../models/AstPlugin';
 import { CssAstPlugin, CssPluginState } from '../models/plugins/CssAstPlugin';

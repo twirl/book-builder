@@ -29,7 +29,7 @@ export class BookBuilder {
 
     public async build<
         T extends Templates<S & Strings>,
-        S,
+        S extends Strings,
         B extends keyof BuilderMap<T, S>
     >(
         target: B,
@@ -133,11 +133,13 @@ export const DEFAULT_OPTIONS: Options = {
 
 export class ConsoleLogger {
     constructor(private readonly options: Options) {}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public debug(...args: any[]) {
         if (this.options.logLevel <= LogLevel.DEBUG) {
             console.log(...args);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public error(...args: any[]) {
         console.error(...args);
     }

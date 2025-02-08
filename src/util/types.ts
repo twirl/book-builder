@@ -1,5 +1,5 @@
 export class EnumerationError extends Error {
-    constructor(error: never) {
+    constructor(_error: never) {
         super();
     }
 }
@@ -7,6 +7,4 @@ export class EnumerationError extends Error {
 export const isFieldDefined = <T, P extends keyof T>(
     obj: T,
     path: P
-): obj is T & Required<Pick<T, P>> => {
-    return obj[path] !== undefined;
-};
+): obj is T & Required<Pick<T, P>> => obj[path] !== undefined;

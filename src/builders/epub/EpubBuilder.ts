@@ -3,10 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import epub, { Chapter as EpubChapter } from 'epub-gen-memory';
 
 import { BuilderState } from '../../models/Builder';
-import {
-    EpubBuilder,
-    EpubBuilderOptions
-} from '../../models/builders/EpubBuilder';
+import { EpubBuilderOptions } from '../../models/builders/EpubBuilder';
 import { LogLevel } from '../../models/Logger';
 import { Pipeline } from '../../models/Pipeline';
 import { Strings } from '../../models/Strings';
@@ -14,7 +11,7 @@ import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
 import { resolveFileSrc } from '../../util/resolveFileSrc';
 
-export const epubBuilder: EpubBuilder<any, any> = async <T, S extends Strings>(
+export const epubBuilder = async <T, S extends Strings>(
     structure: Structure,
     state: BuilderState<T, S>,
     pipeline: Pipeline<T, S, 'epub'>,

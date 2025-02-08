@@ -46,15 +46,13 @@ export class Cache {
                     );
                     return new Cache(logger, dir, true);
                 }
-            } catch (e) {
-                try {
-                    await mkdir(dir);
-                } catch (e) {}
+            } catch (_e) {
+                await mkdir(dir);
             }
 
             try {
                 await access(dir, constants.W_OK | constants.X_OK);
-            } catch (e) {
+            } catch (_e) {
                 logger.error(`${dir} is not writeable, cache is disabled`);
                 return new Cache(logger, dir, true);
             }
@@ -146,6 +144,7 @@ export class Cache {
 
     public async putToCache(
         key: CacheKey,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: any,
         ext?: string
     ): Promise<Path | null> {
@@ -168,13 +167,14 @@ export class Cache {
     }
 
     private static keyToFileName(key: CacheKey, ext?: string) {
-        return key.replace(/[\W]/g, '_') + (ext ? '.' + ext : '');
+        return key.replace(/[\W]/g, '_') + (ext ? `.${ext}` : '');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private static toBuffer(data: any): Buffer {
         return Buffer.isBuffer(data)
             ? data
-            : typeof data == 'string'
+            : typeof data === 'string'
               ? Buffer.from(data, 'utf-8')
               : Buffer.from(JSON.stringify(data), 'utf-8');
     }

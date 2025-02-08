@@ -80,7 +80,7 @@ export class DefaultTemplates<
     }
 
     public linkText(href: Href): string {
-        return href.replace(/^[\w\+]+\:\/\//, '').replace(/\/$/, '');
+        return href.replace(/^[\w+]+:\/\//, '').replace(/\/$/, '');
     }
 
     public bibliographyItemAnchor(
@@ -93,17 +93,17 @@ export class DefaultTemplates<
     public bibliographyItemShortName(bibliographyItem: BibliographyItem) {
         return `${bibliographyItem.authors}${
             bibliographyItem.publicationDate
-                ? ' (' + bibliographyItem.publicationDate + ')'
+                ? ` (${bibliographyItem.publicationDate})`
                 : ''
         }`;
     }
 
     public epubSectionFilename(section: Section) {
-        return section.anchor + '.xhtml';
+        return `${section.anchor}.xhtml`;
     }
 
     public epubChapterFilename(chapter: Chapter) {
-        return chapter.anchor + '.xhtml';
+        return `${chapter.anchor}.xhtml`;
     }
 
     public async htmlDocument(structure: Structure, css: string) {
@@ -150,19 +150,20 @@ export class DefaultTemplates<
             .reduce((sectionHtml: string[], section) => {
                 if (section.inTableOfContents()) {
                     sectionHtml.push(
-                        `<li><a ${this.href('#' + section.anchor)}>${escapeHtml(
+                        `<li><a ${this.href(`#${section.anchor}`)}>${escapeHtml(
                             this.sectionTitle(section)
                         )}</a>${
                             section.getChapters().length
                                 ? `<ul>${section
                                       .getChapters()
-                                      .map((chapter) => {
-                                          return `<li><a ${this.href(
-                                              '#' + chapter.anchor
-                                          )}>${escapeHtml(
-                                              this.chapterTitle(chapter)
-                                          )}</a></li>`;
-                                      })
+                                      .map(
+                                          (chapter) =>
+                                              `<li><a ${this.href(
+                                                  `#${chapter.anchor}`
+                                              )}>${escapeHtml(
+                                                  this.chapterTitle(chapter)
+                                              )}</a></li>`
+                                      )
                                       .join('')}</ul>`
                                 : ''
                         }</li>`
@@ -262,7 +263,7 @@ export class DefaultTemplates<
         return `<h5>${await this.htmlAnchor(
             `${counter}. ${content}`,
             `${chapter.anchor}-para-${counter}${
-                iteration > 1 ? '-' + iteration : ''
+                iteration > 1 ? `-${iteration}` : ''
             }`
         )}</h5>` as HtmlString;
     }
@@ -339,7 +340,7 @@ export class DefaultTemplates<
                       ref,
                       prevRef,
                       bibliography
-                  )}${link ? '<br/>' + link : ''}</span>`
+                  )}${link ? `<br/>${link}` : ''}</span>`
         }` as HtmlString;
     }
 
@@ -362,7 +363,7 @@ export class DefaultTemplates<
         bibliography?: Bibliography
     ) {
         if (ref.bibliographyItemAlias) {
-            if (bibliography && bibliography[ref.bibliographyItemAlias]) {
+            if (bibliography?.[ref.bibliographyItemAlias]) {
                 return this.htmlReferenceBibliographyItem(
                     ref,
                     prevRef,
@@ -386,7 +387,7 @@ export class DefaultTemplates<
         prevRef: Reference | null,
         bibliography?: Bibliography
     ) {
-        const alt = ref.alt;
+        const { alt } = ref;
         if (!alt.bibliographyItemAlias && !alt.text) {
             this.context.logger.error(
                 'Alt reference must contain either text or alias',
@@ -395,7 +396,7 @@ export class DefaultTemplates<
         }
         if (
             alt.bibliographyItemAlias &&
-            (!bibliography || !bibliography[alt.bibliographyItemAlias])
+            !bibliography?.[alt.bibliographyItemAlias]
         ) {
             this.context.logger.error('Unknown alt bibliography alias', ref);
         }
@@ -406,8 +407,7 @@ export class DefaultTemplates<
             bibliography
         )}”${link ? ` &middot; ${link}` : ''} ${this.string('referenceOr')} ${
             alt.bibliographyItemAlias &&
-            bibliography &&
-            bibliography[alt.bibliographyItemAlias]
+            bibliography?.[alt.bibliographyItemAlias]
                 ? await this.htmlAltReferenceBibliographyItem(
                       ref,
                       prevRef,
@@ -428,13 +428,13 @@ export class DefaultTemplates<
             prevRef &&
             prevRef.bibliographyItemAlias === ref.bibliographyItemAlias
         ) {
-            return `${this.string('ibid')}${ref.text ? ', ' + escapeHtml(ref.text) : ''}` as HtmlString;
+            return `${this.string('ibid')}${ref.text ? `, ${escapeHtml(ref.text)}` : ''}` as HtmlString;
         } else {
             return `<a ${this.cssClass(
                 'refToBibliography'
             )} href="#${this.bibliographyItemAnchor(alias, item)}">${this.bibliographyItemShortName(
                 item
-            )}</a>${ref.text ? ', ' + escapeHtml(ref.text) : ''}` as HtmlString;
+            )}</a>${ref.text ? `, ${escapeHtml(ref.text)}` : ''}` as HtmlString;
         }
     }
 
@@ -449,7 +449,7 @@ export class DefaultTemplates<
         )} href="#${this.bibliographyItemAnchor(alias, item)}">${this.bibliographyItemShortName(
             item
         )}</a>${
-            ref.alt.text ? ', ' + escapeHtml(ref.alt.text) : ''
+            ref.alt.text ? `, ${escapeHtml(ref.alt.text)}` : ''
         }` as HtmlString;
     }
 
@@ -488,8 +488,8 @@ export class DefaultTemplates<
         return `<p><a id="${anchor}">${await this.htmlBibliographyItemFullName(
             item
         )}</a>${
-            item.hrefs && item.hrefs.length
-                ? '<br/>' + (await this.htmlBibliographyHrefs(item.hrefs))
+            item.hrefs?.length
+                ? `<br/>${await this.htmlBibliographyHrefs(item.hrefs)}`
                 : ''
         }</p>` as HtmlString;
     }
@@ -497,7 +497,7 @@ export class DefaultTemplates<
     public async htmlBibliographyHrefs(hrefs: Href[]): Promise<HtmlString> {
         const htmlParts: HtmlString[] = [];
         for (const href of hrefs) {
-            const match = href.trim().match(/^\w+\:/);
+            const match = href.trim().match(/^\w+:/);
             const scheme = match ? match[0] : 'unknown:';
             switch (scheme) {
                 case 'http:':

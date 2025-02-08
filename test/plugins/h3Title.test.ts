@@ -60,14 +60,14 @@ describe('H3 to title', () => {
                 language: 'en',
                 locale: 'en-US'
             };
-            const plugin = h3Title<Templates<Strings>, {}>();
+            const plugin = h3Title<Templates<Strings>, object>();
 
             const ast = await markdownToAst(md);
             const state = {
                 chapter,
                 l10n,
                 context
-            } as any as StructureAstState<Templates<Strings>, {}>;
+            } as any as StructureAstState<Templates<Strings>, object>;
             await applyHastPluginToAst(ast, plugin, state);
 
             expect(state.chapter).toEqual(expected);

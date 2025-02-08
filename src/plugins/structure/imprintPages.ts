@@ -5,7 +5,7 @@ import { Structure } from '../../structure/Structure';
 
 export const imprintPages =
     (html: string, anchor: string) =>
-    async <T, S>(structure: Structure, state: StructurePluginState<T, S>) => {
+    async <T, S>(structure: Structure, _state: StructurePluginState<T, S>) => {
         structure.prependSection(
             new Section(
                 anchor,

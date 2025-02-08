@@ -44,9 +44,7 @@ export function getValidatorMessages(
     result: Awaited<ReturnType<typeof HtmlValidate.prototype.validateString>>
 ): string {
     return JSON.stringify(
-        result.results.reduce((acc, r) => {
-            return acc.concat(r.messages);
-        }, [] as Message[]),
+        result.results.reduce((acc, r) => acc.concat(r.messages), [] as Message[]),
         null,
         4
     );

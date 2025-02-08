@@ -3,10 +3,7 @@ import { basename } from 'node:path';
 import puppeteer from 'puppeteer';
 
 import { BuilderState } from '../../models/Builder';
-import {
-    PdfBuilder,
-    PdfBuilderOptions
-} from '../../models/builders/PdfBuilder';
+import { PdfBuilderOptions } from '../../models/builders/PdfBuilder';
 import { LogLevel } from '../../models/Logger';
 import { Pipeline } from '../../models/Pipeline';
 import { Strings } from '../../models/Strings';
@@ -14,7 +11,7 @@ import { CacheKey, HtmlString, Path } from '../../models/Types';
 import { cssAstPipeline } from '../../pipeline/cssAst';
 import { Structure } from '../../structure/Structure';
 
-export const pdfBuilder: PdfBuilder<any, any> = async <T, S extends Strings>(
+export const pdfBuilder = async <T, S extends Strings>(
     structure: Structure,
     state: BuilderState<T, S>,
     pipeline: Pipeline<T, S, 'pdf'>,

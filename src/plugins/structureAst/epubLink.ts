@@ -7,9 +7,13 @@ import { createStatelessPlugin } from '../../util/statelessPlugin';
 
 export const epubLink = <T, S>(epubChapterIndex: Map<string, string>) =>
     createStatelessPlugin<StructureAstState<T, S>, ElementContent>(
-        async (node: ElementContent, state: StructureAstState<T, S>) => {
+        async (
+            node: ElementContent,
+            _context,
+            state: StructureAstState<T, S>
+        ) => {
             if (isElement(node) && node.tagName === 'a') {
-                const href = node.properties.href;
+                const { href } = node.properties;
                 if (typeof href === 'string' && href.startsWith('#')) {
                     const path = matchPath(epubChapterIndex, href.slice(1));
                     if (path) {
@@ -23,7 +27,6 @@ export const epubLink = <T, S>(epubChapterIndex: Map<string, string>) =>
                             action: 'continue'
                         };
                     } else {
-                        debugger;
                         state.context.logger.error(
                             'Cannot process internal reference',
                             href
