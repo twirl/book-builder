@@ -42,8 +42,8 @@ export class DefaultTemplates<
     protected cssClass(c: keyof C) {
         return ` class="${escapeHtml(
             typeof this.cssClasses[c] === 'string'
-                ? this.cssClasses[c]
-                : kebabCase(c.toString())
+                ? String(this.cssClasses[c])
+                : kebabCase(String(c))
         )}"` as HtmlString;
     }
 

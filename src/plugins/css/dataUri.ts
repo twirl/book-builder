@@ -12,7 +12,7 @@ export const dataUri = <T, S>(options: Partial<DataUriPluginOptions> = {}) => {
         ...options
     };
     return createStatelessPlugin<CssPluginState<T, S>, CssNode>(
-        async (input, state) => {
+        async (input, _context, state) => {
             if (
                 'block' in input &&
                 input.block !== null &&

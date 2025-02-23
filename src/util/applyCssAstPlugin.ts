@@ -1,6 +1,10 @@
 import { StyleSheet, CssNode, List, parse } from 'css-tree';
 
-import { AstPluginRunner, ReplaceAction } from '../models/AstPlugin';
+import {
+    AstContext,
+    AstPluginRunner,
+    ReplaceAction
+} from '../models/AstPlugin';
 import { CssAstPlugin, CssPluginState } from '../models/plugins/CssAstPlugin';
 
 export const applyCssPluginToAst = async <T, S>(
@@ -10,8 +14,15 @@ export const applyCssPluginToAst = async <T, S>(
 ): Promise<void> => {
     const runner = await plugin.init(state);
     const updatedChildren: CssNode[] = [];
-    for (const node of ast.children) {
-        updatedChildren.push(...(await applyPluginToNode(node, runner)));
+    const children = ast.children.toArray();
+    for (const [index, node] of children.entries()) {
+        updatedChildren.push(
+            ...(await applyPluginToNode(
+                node,
+                createContext(ast, children, node, index),
+                runner
+            ))
+        );
     }
     ast.children = new List<CssNode>().fromArray(updatedChildren);
     await runner.finish(state);
@@ -19,9 +30,10 @@ export const applyCssPluginToAst = async <T, S>(
 
 export const applyPluginToNode = async <T>(
     node: CssNode,
+    context: AstContext<CssNode>,
     plugin: AstPluginRunner<T, CssNode>
 ): Promise<CssNode[]> => {
-    const result = await plugin.run(node);
+    const result = await plugin.run(node, context);
     switch (result.action) {
         case 'replace':
             return Array.isArray(result.newValue)
@@ -60,6 +72,14 @@ export const replaceFromCss = async (
     };
 };
 
-// export const areChildrenProcessable = function (node: CssNode): node is ? {
-//     return node.type === ?;
-// };
+export const createContext = (
+    parent: StyleSheet,
+    children: CssNode[],
+    node: CssNode,
+    index: number
+): AstContext<CssNode> => ({
+    index,
+    parent: { children },
+    previousSibling: index > 0 ? children[index - 1] : null,
+    nextSibling: index < children.length - 1 ? children[index + 1] : null
+});
