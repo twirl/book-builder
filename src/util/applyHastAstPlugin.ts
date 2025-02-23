@@ -43,7 +43,8 @@ export const makeAstContext = (
     return {
         index,
         previousSibling: prev && isElementContent(prev) ? prev : null,
-        nextSibling: next && isElementContent(next) ? next : null
+        nextSibling: next && isElementContent(next) ? next : null,
+        parent: ast as { children: ElementContent[] }
     };
 };
 

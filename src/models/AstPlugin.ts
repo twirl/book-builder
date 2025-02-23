@@ -13,6 +13,7 @@ export interface AstContext<C = ElementContent> {
     index: number;
     previousSibling: C | null;
     nextSibling: C | null;
+    parent: { children: C[] };
 }
 
 export type Action<C = ElementContent> =
