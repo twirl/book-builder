@@ -12,7 +12,9 @@ export const reference =
         refPrefix = 'ref',
         bibliography = {},
         anchor = 'bibliography',
-        prependPath
+        prependPath,
+        skipPostChapterReferences,
+        skipBibliographySection
     }: Partial<ReferencePluginOptions> = {}) =>
     async <T, S extends Strings = Strings>(
         structure: Structure,
@@ -25,31 +27,44 @@ export const reference =
             ref<T, S>({ prefix: refPrefix }),
             {
                 onChapterEnd: async (runner, _state, chapter, section) => {
-                    const refs = (runner as RefAstPluginRunner<T, S>).getRefs();
-                    if (refs.length) {
-                        chapter.content.children.push(
-                            ...(await htmlToAstElements(
-                                await state.l10n.templates.htmlChapterReferences(
-                                    refs,
-                                    chapter,
-                                    section,
-                                    bibliography,
-                                    prependPath
-                                )
-                            ))
-                        );
+                    if (!skipPostChapterReferences) {
+                        const refs = (
+                            runner as RefAstPluginRunner<T, S>
+                        ).getRefs();
+                        if (refs.length) {
+                            chapter.content.children.push(
+                                ...(await htmlToAstElements(
+                                    await state.l10n.templates.htmlChapterReferences(
+                                        refs,
+                                        chapter,
+                                        section,
+                                        bibliography,
+                                        prependPath
+                                    )
+                                ))
+                            );
+                        }
                     }
                 }
             }
         );
-        structure.appendSection(
-            new Section(anchor, state.l10n.strings.bibliography, undefined, {
-                type: 'root',
-                children: await htmlToAstElements(
-                    await state.l10n.templates.htmlBibliography(bibliography)
+        if (!skipBibliographySection) {
+            structure.appendSection(
+                new Section(
+                    anchor,
+                    state.l10n.strings.bibliography,
+                    undefined,
+                    {
+                        type: 'root',
+                        children: await htmlToAstElements(
+                            await state.l10n.templates.htmlBibliography(
+                                bibliography
+                            )
+                        )
+                    }
                 )
-            })
-        );
+            );
+        }
     };
 
 export interface ReferencePluginOptions {
@@ -57,4 +72,6 @@ export interface ReferencePluginOptions {
     bibliography?: Bibliography;
     anchor?: string;
     prependPath?: string;
+    skipBibliographySection?: boolean;
+    skipPostChapterReferences?: boolean;
 }
